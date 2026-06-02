@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { createClient } from "@supabase/supabase-js";
 
 const CLAUDE_MODEL = "claude-sonnet-4-5";
+const SERVER_URL = process.env.REACT_APP_SERVER_URL || "http://localhost:3001";
 
 const supabase = createClient(
   process.env.REACT_APP_SUPABASE_URL,
@@ -64,7 +65,7 @@ const ANALYTICS = {
 
 // ─── API ──────────────────────────────────────────────────────────────────────
 async function callClaude(system, user, onChunk) {
-  const res = await fetch("http://localhost:3001/api/chat", {
+  const res = await fetch(`${SERVER_URL}/api/chat`, {
     method:"POST", headers:{"Content-Type":"application/json"},
     body: JSON.stringify({ model:CLAUDE_MODEL, max_tokens:1000, stream:false, system, messages:[{role:"user",content:user}] }),
   });
@@ -182,7 +183,7 @@ function AuthScreen({ onAuth }) {
     setError(""); setSuccess(""); setLoading(true);
     try {
       if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email, password,
           options: { data: { full_name: name } }
         });
@@ -352,7 +353,7 @@ function CampaignsView({ user }) {
     if (!postModal) return;
     setGeneratingPostImage(true);
     try {
-      const res = await fetch("http://localhost:3001/api/image", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ prompt:`Professional marketing image for Instagram. Theme: ${postModal.theme}. Clean, eye-catching, boutique brand style.` }) });
+      const res = await fetch(`${SERVER_URL}/api/image`, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ prompt:`Professional marketing image for Instagram. Theme: ${postModal.theme}. Clean, eye-catching, boutique brand style.` }) });
       const d = await res.json();
       if (d.error) throw new Error(d.error);
       setPostImage(d.url);
@@ -372,7 +373,7 @@ function CampaignsView({ user }) {
     if (!postModal || !postCaption.trim()) return;
     setPublishing(true);
     try {
-      const res = await fetch("http://localhost:3001/api/publish", {
+      const res = await fetch(`${SERVER_URL}/api/publish`, {
         method:"POST", headers:{"Content-Type":"application/json"},
         body:JSON.stringify({ platforms:postModal.platforms, text:postCaption, imageUrl:postImage, theme:postModal.theme }),
       });
@@ -713,7 +714,7 @@ function VisualsView() {
     if (!concept) return;
     setLoadingImage(true); setError("");
     try {
-      const res = await fetch("http://localhost:3001/api/image", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ prompt:`${style} marketing image: ${concept}` }) });
+      const res = await fetch(`${SERVER_URL}/api/image`, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ prompt:`${style} marketing image: ${concept}` }) });
       const d = await res.json();
       if (d.error) throw new Error(d.error);
       setImages(prev => [{url:d.url,label:prompt},...prev.slice(0,3)]);
@@ -860,6 +861,7 @@ const NAV = [
   { id:"schedule",  label:"Scheduler" },
   { id:"visuals",   label:"Visuals" },
   { id:"analytics", label:"Analytics" },
+  { id:"accounts",  label:"Accounts" },
   { id:"billing",   label:"Billing" },
 ];
 
@@ -901,8 +903,7 @@ function BillingView({ user }) {
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-checkStatus();
+    checkStatus();
     // Check for success/cancel in URL
     const params = new URLSearchParams(window.location.search);
     if (params.get("payment") === "success") {
@@ -917,7 +918,7 @@ checkStatus();
   const checkStatus = async () => {
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:3001/api/stripe/status", {
+      const res = await fetch(`${SERVER_URL}/api/stripe/status`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userEmail: user.email }),
@@ -931,7 +932,7 @@ checkStatus();
   const checkout = async (plan) => {
     setCheckingOut(plan.id);
     try {
-      const res = await fetch("http://localhost:3001/api/stripe/checkout", {
+      const res = await fetch(`${SERVER_URL}/api/stripe/checkout`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -1022,6 +1023,143 @@ checkStatus();
 }
 
 // ─── ROOT ──────────────────────────────────────────────────────────────────────
+
+function AccountsView({ user }) {
+  const [accounts, setAccounts] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [connecting, setConnecting] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  // Use user ID as their Upload-Post username
+  const uploadPostUsername = user.id;
+
+  useEffect(() => {
+    initProfile();
+  }, []);
+
+  const initProfile = async () => {
+    setLoading(true);
+    try {
+      // Try to get existing profile
+      const res = await fetch(`${SERVER_URL}/api/social/accounts`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: uploadPostUsername }),
+      });
+      const data = await res.json();
+      if (data.profile) {
+        setAccounts(data.profile.social_accounts || {});
+      } else {
+        // Create profile if doesn't exist
+        await fetch(`${SERVER_URL}/api/social/create-profile`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username: uploadPostUsername }),
+        });
+        setAccounts({});
+      }
+    } catch (e) {
+      setError("Could not load accounts.");
+    }
+    setLoading(false);
+  };
+
+  const connectAccounts = async () => {
+    setConnecting(true); setError(""); setSuccess("");
+    try {
+      const res = await fetch(`${SERVER_URL}/api/social/connect-link`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: uploadPostUsername }),
+      });
+      const data = await res.json();
+      if (data.access_url) {
+        setSuccess("Opening social media connection page...");
+        window.open(data.access_url, "_blank");
+        // Refresh accounts after 5 seconds
+        setTimeout(() => initProfile(), 5000);
+      } else {
+        throw new Error(data.message || "Could not generate connect link");
+      }
+    } catch (e) {
+      setError("Could not generate connection link: " + e.message);
+    }
+    setConnecting(false);
+  };
+
+  const SOCIAL_PLATFORMS = [
+    { id: "instagram", label: "Instagram", color: "#C13584", icon: "◈" },
+    { id: "facebook",  label: "Facebook",  color: "#1877F2", icon: "◉" },
+    { id: "linkedin",  label: "LinkedIn",  color: "#0A66C2", icon: "◆" },
+    { id: "twitter",   label: "X / Twitter", color: "#14171A", icon: "◇" },
+    { id: "tiktok",    label: "TikTok",    color: "#010101", icon: "◐" },
+  ];
+
+  const isConnected = (platform) => {
+    if (!accounts) return false;
+    const acc = accounts[platform];
+    return acc && typeof acc === "object" && (acc.handle || acc.display_name || acc.username);
+  };
+
+  return (
+    <div>
+      <div style={{ marginBottom:28 }}>
+        <h2 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:32, fontWeight:600, color:T.ink, margin:0 }}>Connected Accounts</h2>
+        <p style={{ fontSize:13, color:T.inkLight, marginTop:6, fontFamily:"'Lato',sans-serif" }}>Link your social media accounts to publish directly from Quill</p>
+      </div>
+
+      {error && <div style={{ background:"#8b1a1a11", border:"1px solid #8b1a1a44", borderRadius:10, padding:"10px 14px", fontSize:13, color:T.crimson, marginBottom:16, fontFamily:"'Lato',sans-serif" }}>{error}</div>}
+      {success && <div style={{ background:T.sageDim, border:`1px solid ${T.sage}44`, borderRadius:10, padding:"10px 14px", fontSize:13, color:T.sage, marginBottom:16, fontFamily:"'Lato',sans-serif" }}>{success}</div>}
+
+      {loading ? (
+        <div style={{ textAlign:"center", padding:60, color:T.inkLight, fontFamily:"'Lato',sans-serif" }}>Loading your accounts...</div>
+      ) : (
+        <>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))", gap:16, marginBottom:24 }}>
+            {SOCIAL_PLATFORMS.map(platform => {
+              const connected = isConnected(platform.id);
+              const accountData = accounts?.[platform.id];
+              return (
+                <Card key={platform.id} accent={connected} style={{ display:"flex", alignItems:"center", gap:16, padding:"18px 20px" }}>
+                  <div style={{ width:44, height:44, borderRadius:12, background:platform.color+"18", border:`2px solid ${platform.color}33`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:20, color:platform.color, flexShrink:0 }}>{platform.icon}</div>
+                  <div style={{ flex:1 }}>
+                    <div style={{ fontSize:14, fontWeight:700, color:T.ink, fontFamily:"'Lato',sans-serif", marginBottom:3 }}>{platform.label}</div>
+                    {connected ? (
+                      <div style={{ fontSize:12, color:T.sage, fontFamily:"'Lato',sans-serif" }}>✓ Connected{accountData?.display_name ? ` as @${accountData.display_name}` : accountData?.handle ? ` as @${accountData.handle}` : ""}</div>
+                    ) : (
+                      <div style={{ fontSize:12, color:T.inkLight, fontFamily:"'Lato',sans-serif" }}>Not connected</div>
+                    )}
+                  </div>
+                  <div style={{ width:10, height:10, borderRadius:"50%", background:connected ? T.sage : T.parchmentMid, flexShrink:0 }}/>
+                </Card>
+              );
+            })}
+          </div>
+
+          <Card style={{ textAlign:"center", padding:"40px 32px" }}>
+            <div style={{ fontSize:32, marginBottom:16, opacity:0.4 }}>🔗</div>
+            <h3 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:22, color:T.ink, margin:"0 0 10px" }}>Connect your social accounts</h3>
+            <p style={{ fontSize:13, color:T.inkLight, maxWidth:400, margin:"0 auto 24px", lineHeight:1.65, fontFamily:"'Lato',sans-serif" }}>
+              Click the button below to open the account connection page. You can link Instagram, Facebook, LinkedIn, X, and TikTok in one place.
+            </p>
+            <button onClick={connectAccounts} disabled={connecting} style={{ padding:"13px 32px", borderRadius:12, background:connecting ? T.parchmentMid : T.crimson, border:"none", color:T.white, fontSize:14, fontWeight:700, cursor:connecting ? "not-allowed" : "pointer", fontFamily:"'Lato',sans-serif" }}>
+              {connecting ? "Generating link..." : "Connect social accounts"}
+            </button>
+            <p style={{ fontSize:11, color:T.inkLight, marginTop:16, fontFamily:"'Lato',sans-serif" }}>
+              You'll be redirected to a secure page. The link expires in 48 hours.
+            </p>
+          </Card>
+
+          <div style={{ marginTop:16 }}>
+            <button onClick={initProfile} style={{ background:"none", border:"none", color:T.inkLight, cursor:"pointer", fontSize:12, fontFamily:"'Lato',sans-serif", textDecoration:"underline" }}>↻ Refresh connection status</button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 export default function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -1118,6 +1256,7 @@ export default function App() {
             {active==="schedule"  && <SchedulerView user={user}/>}
             {active==="visuals"   && <VisualsView/>}
             {active==="analytics" && <AnalyticsView/>}
+            {active==="accounts"  && <AccountsView user={user}/>}
             {active==="billing"   && <BillingView user={user}/>}
           </div>
         </main>
