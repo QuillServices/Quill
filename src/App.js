@@ -777,78 +777,123 @@ function VisualsView() {
 }
 
 // ─── ANALYTICS ────────────────────────────────────────────────────────────────
-function AnalyticsView() {
+function AnalyticsView({ user }) {
   const [insight, setInsight] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loadingInsight, setLoadingInsight] = useState(false);
+  const [loadingStats, setLoadingStats] = useState(true);
   const [error, setError] = useState("");
-  const d = ANALYTICS;
-  const maxR = Math.max(...d.reach);
+  const [stats, setStats] = useState(null);
+  const [history, setHistory] = useState([]);
+
+  useEffect(() => { fetchStats(); }, []);
+
+  const fetchStats = async () => {
+    setLoadingStats(true); setError("");
+    try {
+      const res = await fetch(`${SERVER_URL}/api/analytics/stats`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: "Quill" }),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      setStats(data.impressions);
+      setHistory(data.history?.uploads || data.history?.history || []);
+    } catch(e) {
+      setError("Could not load analytics: " + e.message);
+    }
+    setLoadingStats(false);
+  };
 
   const analyze = async () => {
-    setInsight(""); setError(""); setLoading(true);
-    try { await callClaude("Social media analyst. Be concise and actionable. Plain text.", `Reach: ${d.summary.totalReach}, Engagement: ${d.summary.avgEngagement}, Posts: ${d.summary.postsThisWeek}, Top: ${d.summary.topPlatform}. 3-sentence insight + 1 recommendation.`, c => setInsight(c)); }
-    catch(e) { setError(e.message); }
-    setLoading(false);
+    setInsight(""); setLoadingInsight(true);
+    try {
+      const summary = stats ? `Total impressions: ${stats.total_impressions || "N/A"}, Likes: ${stats.likes || "N/A"}, Comments: ${stats.comments || "N/A"}, Posts: ${history.length}` : "No data available yet";
+      await callClaude("Social media analyst. Be concise and actionable. Plain text.", `${summary}. Give 3-sentence insight + 1 recommendation.`, c => setInsight(c));
+    } catch(e) { setInsight("Could not generate insight."); }
+    setLoadingInsight(false);
   };
+
+  const statCards = [
+    { label:"Total impressions", val: stats?.total_impressions ?? "—", color:T.crimson },
+    { label:"Total likes",       val: stats?.likes ?? "—",             color:T.burgundy },
+    { label:"Total comments",    val: stats?.comments ?? "—",          color:T.gold },
+    { label:"Posts published",   val: history.length || "—",           color:T.sage },
+  ];
 
   return (
     <div>
-      <div style={{ marginBottom:28 }}>
-        <h2 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:32, fontWeight:600, color:T.ink, margin:0 }}>Analytics</h2>
-        <p style={{ fontSize:13, color:T.inkLight, marginTop:6, fontFamily:"'Lato',sans-serif" }}>Track performance across all platforms</p>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:28 }}>
+        <div>
+          <h2 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:32, fontWeight:600, color:T.ink, margin:0 }}>Analytics</h2>
+          <p style={{ fontSize:13, color:T.inkLight, marginTop:6, fontFamily:"'Lato',sans-serif" }}>Real performance data from your connected accounts</p>
+        </div>
+        <button onClick={fetchStats} disabled={loadingStats} style={{ padding:"8px 16px", borderRadius:9, background:T.parchment, border:`1px solid ${T.parchmentMid}`, color:T.inkFaded, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"'Lato',sans-serif" }}>{loadingStats ? "Loading..." : "↻ Refresh"}</button>
       </div>
+
+      {error && <div style={{ background:"#8b1a1a11", border:"1px solid #8b1a1a44", borderRadius:10, padding:"10px 14px", fontSize:13, color:T.crimson, marginBottom:16, fontFamily:"'Lato',sans-serif" }}>{error}</div>}
+
       <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:20 }}>
-        {[
-          { label:"Total reach",    val:d.summary.totalReach,    color:T.crimson },
-          { label:"Avg engagement", val:d.summary.avgEngagement, color:T.burgundy },
-          { label:"Posts this week",val:d.summary.postsThisWeek, color:T.gold },
-          { label:"Top platform",   val:d.summary.topPlatform,   color:T.sage },
-        ].map(s => (
+        {statCards.map(s => (
           <Card key={s.label} style={{ textAlign:"center" }}>
             <div style={{ fontSize:10, fontWeight:700, color:T.inkLight, textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:8, fontFamily:"'Lato',sans-serif" }}>{s.label}</div>
-            <div style={{ fontSize:26, fontWeight:600, color:s.color, fontFamily:"'Cormorant Garamond',serif" }}>{s.val}</div>
+            <div style={{ fontSize:26, fontWeight:600, color:s.color, fontFamily:"'Cormorant Garamond',serif" }}>{loadingStats ? "..." : s.val}</div>
           </Card>
         ))}
       </div>
-      <div style={{ display:"grid", gridTemplateColumns:"1.6fr 1fr", gap:16, marginBottom:16 }}>
-        <Card>
-          <div style={{ fontSize:13, fontWeight:700, color:T.ink, marginBottom:18, fontFamily:"'Lato',sans-serif" }}>Weekly reach</div>
-          <div style={{ display:"flex", alignItems:"flex-end", gap:10, height:120 }}>
-            {d.reach.map((v,i) => (
-              <div key={i} style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", gap:6 }}>
-                <div style={{ width:"100%", borderRadius:"4px 4px 0 0", height:`${(v/maxR)*100}%`, background:`linear-gradient(180deg,${T.crimson},${T.burgundy})`, minHeight:4 }}/>
-                <span style={{ fontSize:10, color:T.inkLight, fontFamily:"'Lato',sans-serif", fontWeight:600 }}>{d.days[i]}</span>
-              </div>
-            ))}
-          </div>
-        </Card>
+
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginBottom:16 }}>
         <Card>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
             <div style={{ fontSize:13, fontWeight:700, color:T.ink, fontFamily:"'Lato',sans-serif" }}>Smart insight</div>
-            <button onClick={analyze} disabled={loading} style={{ padding:"6px 14px", borderRadius:8, fontSize:11, background:T.crimsonGlow, border:`1px solid ${T.crimson}44`, color:T.crimson, cursor:loading?"not-allowed":"pointer", fontFamily:"'Lato',sans-serif", fontWeight:700 }}>{loading?"Thinking…":"Analyze"}</button>
+            <button onClick={analyze} disabled={loadingInsight} style={{ padding:"6px 14px", borderRadius:8, fontSize:11, background:T.crimsonGlow, border:`1px solid ${T.crimson}44`, color:T.crimson, cursor:loadingInsight?"not-allowed":"pointer", fontFamily:"'Lato',sans-serif", fontWeight:700 }}>{loadingInsight?"Thinking…":"Analyze"}</button>
           </div>
-          <p style={{ fontSize:13, color:error?T.crimson:(insight?T.ink:T.inkLight), lineHeight:1.7, minHeight:80, margin:0, fontFamily:"'Lato',sans-serif" }}>
-            {error||insight||"Click Analyze to get insights on your performance."}
+          <p style={{ fontSize:13, color:T.inkLight, lineHeight:1.7, minHeight:80, margin:0, fontFamily:"'Lato',sans-serif" }}>
+            {insight || "Click Analyze to get insights on your performance."}
           </p>
         </Card>
-      </div>
-      <Card>
-        <div style={{ fontSize:13, fontWeight:700, color:T.ink, marginBottom:16, fontFamily:"'Lato',sans-serif" }}>Top performing posts</div>
-        <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-          {d.topPosts.map((post,i) => (
-            <div key={i} style={{ display:"flex", alignItems:"center", gap:14, padding:"12px 14px", background:T.parchment, borderRadius:12, border:`1px solid ${T.parchmentMid}` }}>
-              <div style={{ width:30, height:30, borderRadius:8, background:T.crimson, display:"flex", alignItems:"center", justifyContent:"center", fontSize:13, color:T.white, fontWeight:700, flexShrink:0, fontFamily:"'Cormorant Garamond',serif" }}>{i+1}</div>
-              <div style={{ flex:1, minWidth:0 }}>
-                <p style={{ fontSize:13, color:T.ink, margin:"0 0 3px", fontFamily:"'Lato',sans-serif" }}>{post.text}</p>
-                <span style={{ fontSize:11, color:T.inkLight, fontFamily:"'Lato',sans-serif" }}>{post.platform}</span>
-              </div>
-              <div style={{ textAlign:"right", flexShrink:0 }}>
-                <div style={{ fontSize:13, fontWeight:700, color:T.ink, fontFamily:"'Lato',sans-serif" }}>♡ {post.likes}</div>
-                <div style={{ fontSize:11, color:T.inkLight, fontFamily:"'Lato',sans-serif" }}>{post.reach.toLocaleString()} reach</div>
-              </div>
+        <Card>
+          <div style={{ fontSize:13, fontWeight:700, color:T.ink, marginBottom:14, fontFamily:"'Lato',sans-serif" }}>Platform breakdown</div>
+          {stats?.platforms ? (
+            <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+              {Object.entries(stats.platforms).map(([platform, data]) => (
+                <div key={platform} style={{ display:"flex", alignItems:"center", gap:12 }}>
+                  <span style={{ fontSize:12, color:T.inkFaded, width:80, fontFamily:"'Lato',sans-serif", textTransform:"capitalize" }}>{platform}</span>
+                  <div style={{ flex:1, height:6, background:T.parchmentMid, borderRadius:3, overflow:"hidden" }}>
+                    <div style={{ height:"100%", background:T.crimson, borderRadius:3, width:`${Math.min(100, (data.impressions / (stats.total_impressions || 1)) * 100)}%` }}/>
+                  </div>
+                  <span style={{ fontSize:11, color:T.inkLight, fontFamily:"'Lato',sans-serif" }}>{data.impressions || 0}</span>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          ) : (
+            <p style={{ fontSize:13, color:T.inkLight, fontFamily:"'Lato',sans-serif" }}>{loadingStats ? "Loading..." : "Connect your accounts and start posting to see platform data."}</p>
+          )}
+        </Card>
+      </div>
+
+      <Card>
+        <div style={{ fontSize:13, fontWeight:700, color:T.ink, marginBottom:16, fontFamily:"'Lato',sans-serif" }}>Recent posts</div>
+        {loadingStats ? (
+          <p style={{ fontSize:13, color:T.inkLight, fontFamily:"'Lato',sans-serif" }}>Loading posts...</p>
+        ) : history.length === 0 ? (
+          <p style={{ fontSize:13, color:T.inkLight, fontFamily:"'Lato',sans-serif" }}>No posts yet. Create a campaign to start publishing!</p>
+        ) : (
+          <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+            {history.slice(0,5).map((post, i) => (
+              <div key={i} style={{ display:"flex", alignItems:"center", gap:14, padding:"12px 14px", background:T.parchment, borderRadius:12, border:`1px solid ${T.parchmentMid}` }}>
+                <div style={{ width:30, height:30, borderRadius:8, background:T.crimson, display:"flex", alignItems:"center", justifyContent:"center", fontSize:13, color:T.white, fontWeight:700, flexShrink:0 }}>{i+1}</div>
+                <div style={{ flex:1, minWidth:0 }}>
+                  <p style={{ fontSize:13, color:T.ink, margin:"0 0 3px", fontFamily:"'Lato',sans-serif" }}>{post.title || post.description || "Post"}</p>
+                  <span style={{ fontSize:11, color:T.inkLight, fontFamily:"'Lato',sans-serif" }}>{post.platform || post.platforms?.join(", ")} · {post.created_at ? new Date(post.created_at).toLocaleDateString() : ""}</span>
+                </div>
+                <div style={{ textAlign:"right", flexShrink:0 }}>
+                  {post.post_metrics && <div style={{ fontSize:12, color:T.inkFaded, fontFamily:"'Lato',sans-serif" }}>♡ {post.post_metrics.likes || 0} · 👁 {post.post_metrics.views || post.post_metrics.impressions || 0}</div>}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </Card>
     </div>
   );
@@ -1255,7 +1300,7 @@ export default function App() {
             {active==="copy"      && <CopywriterView/>}
             {active==="schedule"  && <SchedulerView user={user}/>}
             {active==="visuals"   && <VisualsView/>}
-            {active==="analytics" && <AnalyticsView/>}
+            {active==="analytics" && <AnalyticsView user={user}/>}
             {active==="accounts"  && <AccountsView user={user}/>}
             {active==="billing"   && <BillingView user={user}/>}
           </div>

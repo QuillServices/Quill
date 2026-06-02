@@ -483,4 +483,37 @@ cron.schedule("* * * * *", async () => {
 
 console.log("Automated posting engine started — checking every minute");
 
+// Get real analytics from Upload-Post
+app.post("/api/analytics/stats", async (req, res) => {
+  try {
+    const key = process.env.UPLOADPOST_KEY;
+    const { username } = req.body;
+    const profile = username || "Quill";
+
+    console.log("Fetching analytics for:", profile);
+
+    // Get total impressions
+    const impressionsRes = await fetch(`https://api.upload-post.com/api/uploadposts/total-impressions/${encodeURIComponent(profile)}`, {
+      headers: { "Authorization": `Apikey ${key}` },
+    });
+    const impressionsData = await impressionsRes.json();
+    console.log("Impressions data:", JSON.stringify(impressionsData).slice(0, 300));
+
+    // Get upload history for post-level analytics
+    const historyRes = await fetch(`https://api.upload-post.com/api/uploadposts/history?user=${encodeURIComponent(profile)}&limit=10`, {
+      headers: { "Authorization": `Apikey ${key}` },
+    });
+    const historyData = await historyRes.json();
+    console.log("History data:", JSON.stringify(historyData).slice(0, 300));
+
+    res.json({
+      impressions: impressionsData,
+      history: historyData,
+    });
+  } catch (err) {
+    console.log("Analytics error:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.listen(3001, () => console.log("Server running on port 3001"));
