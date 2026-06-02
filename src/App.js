@@ -182,7 +182,7 @@ function AuthScreen({ onAuth }) {
     setError(""); setSuccess(""); setLoading(true);
     try {
       if (mode === "signup") {
-        const { data, error } = await supabase.auth.signUp({
+        const { error } = await supabase.auth.signUp({
           email, password,
           options: { data: { full_name: name } }
         });
