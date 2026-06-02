@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const cron = require("node-cron");
 const { createClient } = require("@supabase/supabase-js");
+const ws = require("ws");
 
 const app = express();
 app.use(cors());
@@ -15,7 +16,9 @@ const getSupabase = () => {
     const key = process.env.SUPABASE_SERVICE_KEY || process.env.REACT_APP_SUPABASE_ANON_KEY;
     console.log("Supabase URL:", url ? "found" : "MISSING");
     console.log("Supabase Key:", key ? "found" : "MISSING");
-    supabase = createClient(url, key);
+    supabase = createClient(url, key, {
+      realtime: { transport: ws },
+    });
   }
   return supabase;
 };
