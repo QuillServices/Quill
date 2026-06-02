@@ -7,11 +7,18 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: "50mb" }));
 
-// Supabase admin client
-const supabase = createClient(
-  process.env.REACT_APP_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY || process.env.REACT_APP_SUPABASE_ANON_KEY
-);
+// Supabase admin client — initialized lazily so env vars are available
+let supabase;
+const getSupabase = () => {
+  if (!supabase) {
+    const url = process.env.REACT_APP_SUPABASE_URL;
+    const key = process.env.SUPABASE_SERVICE_KEY || process.env.REACT_APP_SUPABASE_ANON_KEY;
+    console.log("Supabase URL:", url ? "found" : "MISSING");
+    console.log("Supabase Key:", key ? "found" : "MISSING");
+    supabase = createClient(url, key);
+  }
+  return supabase;
+};
 
 // Claude API
 app.post("/api/chat", async (req, res) => {
@@ -419,7 +426,7 @@ async function publishCampaignPost(campaign) {
     }
 
     // Update campaign in Supabase
-    await supabase.from("campaigns").update({
+    await getSupabase().from("campaigns").update({
       posts_published: (campaign.posts_published || 0) + 1,
       last_post: caption.slice(0, 55) + "...",
     }).eq("id", campaign.id);
