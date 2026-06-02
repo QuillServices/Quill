@@ -460,7 +460,7 @@ function shouldPostNow(campaign) {
 // Run every minute — check for campaigns due to post
 cron.schedule("* * * * *", async () => {
   try {
-    const { data: campaigns, error } = await supabase
+    const { data: campaigns, error } = await getSupabase()
       .from("campaigns")
       .select("*")
       .eq("status", "active");
