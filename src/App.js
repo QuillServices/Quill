@@ -901,7 +901,8 @@ function BillingView({ user }) {
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    checkStatus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+checkStatus();
     // Check for success/cancel in URL
     const params = new URLSearchParams(window.location.search);
     if (params.get("payment") === "success") {
