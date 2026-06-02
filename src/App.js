@@ -790,10 +790,8 @@ function AnalyticsView({ user }) {
   const fetchStats = async () => {
     setLoadingStats(true); setError("");
     try {
-      const res = await fetch(`${SERVER_URL}/api/analytics/stats`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: "Quill" }),
+      const res = await fetch(`${SERVER_URL}/api/analytics/stats?username=Quill`, {
+        method: "GET",
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);

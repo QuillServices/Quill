@@ -484,11 +484,10 @@ cron.schedule("* * * * *", async () => {
 console.log("Automated posting engine started — checking every minute");
 
 // Get real analytics from Upload-Post
-app.post("/api/analytics/stats", async (req, res) => {
+app.get("/api/analytics/stats", async (req, res) => {
   try {
     const key = process.env.UPLOADPOST_KEY;
-    const { username } = req.body;
-    const profile = username || "Quill";
+    const profile = req.query.username || "Quill";
 
     console.log("Fetching analytics for:", profile);
 
