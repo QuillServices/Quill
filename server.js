@@ -1,8 +1,17 @@
 const express = require("express");
 const cors = require("cors");
+const cron = require("node-cron");
+const { createClient } = require("@supabase/supabase-js");
+
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: "50mb" }));
+
+// Supabase admin client
+const supabase = createClient(
+  process.env.REACT_APP_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_KEY || process.env.REACT_APP_SUPABASE_ANON_KEY
+);
 
 // Claude API
 app.post("/api/chat", async (req, res) => {
@@ -249,5 +258,219 @@ app.post("/api/stripe/status", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// Create Upload-Post user profile
+app.post("/api/social/create-profile", async (req, res) => {
+  try {
+    const key = process.env.UPLOADPOST_KEY;
+    const { username } = req.body;
+    const response = await fetch("https://api.upload-post.com/api/uploadposts/users", {
+      method: "POST",
+      headers: { "Authorization": `Apikey ${key}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ username }),
+    });
+    const data = await response.json();
+    console.log("Create profile:", JSON.stringify(data).slice(0, 200));
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Generate social connect link for a user
+app.post("/api/social/connect-link", async (req, res) => {
+  try {
+    const key = process.env.UPLOADPOST_KEY;
+    const { username } = req.body;
+    const response = await fetch("https://api.upload-post.com/api/uploadposts/users/generate-jwt", {
+      method: "POST",
+      headers: { "Authorization": `Apikey ${key}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ username }),
+    });
+    const data = await response.json();
+    console.log("Connect link:", JSON.stringify(data).slice(0, 200));
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get user connected social accounts
+app.post("/api/social/accounts", async (req, res) => {
+  try {
+    const key = process.env.UPLOADPOST_KEY;
+    const { username } = req.body;
+    const response = await fetch(`https://api.upload-post.com/api/uploadposts/users/${encodeURIComponent(username)}`, {
+      headers: { "Authorization": `Apikey ${key}` },
+    });
+    const data = await response.json();
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── AUTOMATED POSTING ENGINE ────────────────────────────────────────────────
+async function generateCaption(theme, brandVoice) {
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": process.env.REACT_APP_ANTHROPIC_KEY,
+      "anthropic-version": "2023-06-01",
+    },
+    body: JSON.stringify({
+      model: "claude-sonnet-4-5",
+      max_tokens: 500,
+      system: "Write one engaging social media post caption. Output ONLY the caption, nothing else.",
+      messages: [{ role: "user", content: `Theme: "${theme}". Brand voice: ${brandVoice || "professional"}. Make it unique and engaging.` }],
+    }),
+  });
+  const data = await res.json();
+  return data?.content?.[0]?.text || "";
+}
+
+async function generateImage(theme) {
+  const res = await fetch("https://api.openai.com/v1/images/generations", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${process.env.OPENAI_KEY}`,
+    },
+    body: JSON.stringify({
+      model: "gpt-image-1",
+      prompt: `Professional marketing image for social media. Theme: ${theme}. Clean, eye-catching boutique brand style.`,
+      n: 1,
+      size: "1024x1024",
+      output_format: "png",
+    }),
+  });
+  const data = await res.json();
+  if (data.data?.[0]?.b64_json) {
+    return `data:image/png;base64,${data.data[0].b64_json}`;
+  }
+  return null;
+}
+
+async function publishCampaignPost(campaign) {
+  try {
+    console.log(`Auto-posting campaign: ${campaign.name}`);
+    
+    const caption = await generateCaption(campaign.theme, campaign.brand_voice);
+    if (!caption) throw new Error("Could not generate caption");
+
+    const uploadKey = process.env.UPLOADPOST_KEY;
+    const platforms = campaign.platforms || [];
+    const username = "Quill"; // TODO: map to user's Upload-Post profile when multi-user is set up
+
+    const textPlatforms = platforms.filter(p => p !== "instagram");
+    const imagePlatforms = platforms.filter(p => p === "instagram");
+
+    // Post to text platforms
+    if (textPlatforms.length > 0) {
+      const params = new URLSearchParams();
+      params.append("user", username);
+      params.append("title", caption);
+      textPlatforms.forEach(p => params.append("platform[]", p));
+      const textRes = await fetch("https://api.upload-post.com/api/upload_text", {
+        method: "POST",
+        headers: { "Authorization": `Apikey ${uploadKey}`, "Content-Type": "application/x-www-form-urlencoded" },
+        body: params.toString(),
+      });
+      const textData = await textRes.text();
+      console.log("Text post result:", textData.slice(0, 200));
+    }
+
+    // Post to Instagram with image
+    if (imagePlatforms.length > 0) {
+      const imageUrl = await generateImage(campaign.theme);
+      if (imageUrl) {
+        const base64Data = imageUrl.replace(/^data:image\/\w+;base64,/, "");
+        const imgBuffer = Buffer.from(base64Data, "base64");
+
+        const boundary = "----QuillCron" + Date.now();
+        const CRLF = "\r\n";
+        const buildPart = (name, value) => Buffer.from(`--${boundary}${CRLF}Content-Disposition: form-data; name="${name}"${CRLF}${CRLF}${value}${CRLF}`);
+        const filePart = Buffer.concat([
+          Buffer.from(`--${boundary}${CRLF}Content-Disposition: form-data; name="photos[]"; filename="post.jpg"${CRLF}Content-Type: image/jpeg${CRLF}${CRLF}`),
+          imgBuffer,
+          Buffer.from(CRLF),
+        ]);
+        const body = Buffer.concat([
+          buildPart("user", username),
+          buildPart("title", caption),
+          buildPart("platform[]", "instagram"),
+          filePart,
+          Buffer.from(`--${boundary}--${CRLF}`),
+        ]);
+
+        const photoRes = await fetch("https://api.upload-post.com/api/upload_photos", {
+          method: "POST",
+          headers: {
+            "Authorization": `Apikey ${uploadKey}`,
+            "Content-Type": `multipart/form-data; boundary=${boundary}`,
+            "Content-Length": body.length,
+          },
+          body: body,
+        });
+        const photoData = await photoRes.text();
+        console.log("Photo post result:", photoData.slice(0, 300));
+      }
+    }
+
+    // Update campaign in Supabase
+    await supabase.from("campaigns").update({
+      posts_published: (campaign.posts_published || 0) + 1,
+      last_post: caption.slice(0, 55) + "...",
+    }).eq("id", campaign.id);
+
+    console.log(`Successfully posted campaign: ${campaign.name}`);
+  } catch (e) {
+    console.log(`Failed to post campaign ${campaign.name}:`, e.message);
+  }
+}
+
+function shouldPostNow(campaign) {
+  const now = new Date();
+  const currentHour = now.getHours().toString().padStart(2, "0");
+  const currentMin = now.getMinutes().toString().padStart(2, "0");
+  const currentTime = `${currentHour}:${currentMin}`;
+  const currentDay = now.getDay(); // 0=Sun, 1=Mon...5=Fri, 6=Sat
+  const isWeekday = currentDay >= 1 && currentDay <= 5;
+
+  if (!campaign.post_time || campaign.post_time !== currentTime) return false;
+  if (campaign.status !== "active") return false;
+
+  switch (campaign.frequency) {
+    case "daily": return true;
+    case "weekdays": return isWeekday;
+    case "weekly": return currentDay === 1; // Every Monday
+    case "twice_week": return currentDay === 1 || currentDay === 4; // Mon & Thu
+    default: return false;
+  }
+}
+
+// Run every minute — check for campaigns due to post
+cron.schedule("* * * * *", async () => {
+  try {
+    const { data: campaigns, error } = await supabase
+      .from("campaigns")
+      .select("*")
+      .eq("status", "active");
+
+    if (error || !campaigns?.length) return;
+
+    for (const campaign of campaigns) {
+      if (shouldPostNow(campaign)) {
+        console.log(`Cron triggered post for: ${campaign.name}`);
+        await publishCampaignPost(campaign);
+      }
+    }
+  } catch (e) {
+    console.log("Cron error:", e.message);
+  }
+});
+
+console.log("Automated posting engine started — checking every minute");
 
 app.listen(3001, () => console.log("Server running on port 3001"));
