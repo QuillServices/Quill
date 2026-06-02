@@ -496,15 +496,19 @@ app.post("/api/analytics/stats", async (req, res) => {
     const impressionsRes = await fetch(`https://api.upload-post.com/api/uploadposts/total-impressions/${encodeURIComponent(profile)}`, {
       headers: { "Authorization": `Apikey ${key}` },
     });
-    const impressionsData = await impressionsRes.json();
-    console.log("Impressions data:", JSON.stringify(impressionsData).slice(0, 300));
+    const impressionsText = await impressionsRes.text();
+    console.log("Impressions raw:", impressionsText.slice(0, 200));
+    let impressionsData = {};
+    try { impressionsData = JSON.parse(impressionsText); } catch(e) { console.log("Impressions parse error:", e.message); }
 
-    // Get upload history for post-level analytics
+    // Get upload history
     const historyRes = await fetch(`https://api.upload-post.com/api/uploadposts/history?user=${encodeURIComponent(profile)}&limit=10`, {
       headers: { "Authorization": `Apikey ${key}` },
     });
-    const historyData = await historyRes.json();
-    console.log("History data:", JSON.stringify(historyData).slice(0, 300));
+    const historyText = await historyRes.text();
+    console.log("History raw:", historyText.slice(0, 200));
+    let historyData = {};
+    try { historyData = JSON.parse(historyText); } catch(e) { console.log("History parse error:", e.message); }
 
     res.json({
       impressions: impressionsData,
