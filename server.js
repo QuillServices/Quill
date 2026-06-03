@@ -1,14 +1,13 @@
 const express = require("express");
 const cors = require("cors");
 const cron = require("node-cron");
-const { createClient } = require("@supabase/supabase-js");
 const ws = require("ws");
+const { createClient } = require("@supabase/supabase-js");
 
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: "50mb" }));
 
-// Supabase admin client — initialized lazily so env vars are available
 let supabase;
 const getSupabase = () => {
   if (!supabase) {
@@ -16,9 +15,7 @@ const getSupabase = () => {
     const key = process.env.SUPABASE_SERVICE_KEY || process.env.REACT_APP_SUPABASE_ANON_KEY;
     console.log("Supabase URL:", url ? "found" : "MISSING");
     console.log("Supabase Key:", key ? "found" : "MISSING");
-    supabase = createClient(url, key, {
-      realtime: { transport: ws },
-    });
+    supabase = createClient(url, key, { realtime: { transport: ws } });
   }
   return supabase;
 };
@@ -74,7 +71,7 @@ app.post("/api/image", async (req, res) => {
   }
 });
 
-// Check Upload-Post profiles
+// Get Upload-Post profiles
 app.get("/api/profiles", async (req, res) => {
   try {
     const key = process.env.UPLOADPOST_KEY;
@@ -84,6 +81,35 @@ app.get("/api/profiles", async (req, res) => {
     const data = await response.json();
     res.json(data);
   } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Real analytics from Upload-Post
+app.get("/api/analytics/stats", async (req, res) => {
+  try {
+    const key = process.env.UPLOADPOST_KEY;
+    const profile = req.query.username || "Quill";
+    console.log("Fetching analytics for:", profile);
+
+    const baseUrl = "https://api.upload-post.com/api/uploadposts";
+    const authHeader = { "Authorization": "Apikey " + key };
+
+    const impressionsRes = await fetch(baseUrl + "/total-impressions/" + encodeURIComponent(profile), { headers: authHeader });
+    const impressionsText = await impressionsRes.text();
+    console.log("Impressions:", impressionsText.slice(0, 200));
+    let impressionsData = {};
+    try { impressionsData = JSON.parse(impressionsText); } catch(e) { console.log("Parse error:", e.message); }
+
+    const historyRes = await fetch(baseUrl + "/history?user=" + encodeURIComponent(profile) + "&limit=10", { headers: authHeader });
+    const historyText = await historyRes.text();
+    console.log("History:", historyText.slice(0, 200));
+    let historyData = {};
+    try { historyData = JSON.parse(historyText); } catch(e) { console.log("Parse error:", e.message); }
+
+    res.json({ impressions: impressionsData, history: historyData });
+  } catch (err) {
+    console.log("Analytics error:", err.message);
     res.status(500).json({ error: err.message });
   }
 });
@@ -105,16 +131,11 @@ app.post("/api/publish", async (req, res) => {
       try {
         const imgResponse = await fetch("https://api.openai.com/v1/images/generations", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${openaiKey}`,
-          },
+          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${openaiKey}` },
           body: JSON.stringify({
             model: "gpt-image-1",
             prompt: `Professional marketing photo for Instagram. Theme: ${theme || postText?.slice(0, 100)}. Clean, eye-catching boutique brand style.`,
-            n: 1,
-            size: "1024x1024",
-            output_format: "png",
+            n: 1, size: "1024x1024", output_format: "png",
           }),
         });
         const imgData = await imgResponse.json();
@@ -122,87 +143,55 @@ app.post("/api/publish", async (req, res) => {
           imageUrl = `data:image/png;base64,${imgData.data[0].b64_json}`;
           console.log("Image generated");
         }
-      } catch(e) {
-        console.log("Image generation failed:", e.message);
-      }
+      } catch(e) { console.log("Image generation failed:", e.message); }
     }
 
-    const textPlatforms = platforms.filter(p => !["instagram"].includes(p));
-    const imagePlatforms = platforms.filter(p => ["instagram"].includes(p));
+    const textPlatforms = platforms.filter(p => p !== "instagram");
+    const imagePlatforms = platforms.filter(p => p === "instagram");
     const results = [];
 
-    // Text platforms (LinkedIn, Facebook, X)
     if (textPlatforms.length > 0) {
       const params = new URLSearchParams();
       params.append("user", "Quill");
       params.append("title", postText);
       textPlatforms.forEach(p => params.append("platform[]", p));
-
       const response = await fetch("https://api.upload-post.com/api/upload_text", {
         method: "POST",
-        headers: {
-          "Authorization": `Apikey ${uploadKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          user: "Quill",
-          title: postText,
-          platform: textPlatforms,
-        }),
+        headers: { "Authorization": `Apikey ${uploadKey}`, "Content-Type": "application/x-www-form-urlencoded" },
+        body: params.toString(),
       });
       const raw = await response.text();
       console.log("Text post response:", raw.slice(0, 200));
       try { results.push(JSON.parse(raw)); } catch { results.push({ error: raw.slice(0, 100) }); }
     }
 
-    // Instagram with image
     if (imagePlatforms.length > 0) {
       if (!imageUrl) {
         results.push({ error: "Instagram requires an image" });
       } else {
-        // Build multipart form manually for maximum compatibility
         const base64Data = imageUrl.replace(/^data:image\/\w+;base64,/, "");
         const imgBuffer = Buffer.from(base64Data, "base64");
-
         const boundary = "----QuillBoundary" + Date.now();
         const CRLF = "\r\n";
-
-        const buildPart = (name, value) => {
-          return Buffer.from(
-            `--${boundary}${CRLF}Content-Disposition: form-data; name="${name}"${CRLF}${CRLF}${value}${CRLF}`
-          );
-        };
-
+        const buildPart = (name, value) => Buffer.from(`--${boundary}${CRLF}Content-Disposition: form-data; name="${name}"${CRLF}${CRLF}${value}${CRLF}`);
         const filePart = Buffer.concat([
           Buffer.from(`--${boundary}${CRLF}Content-Disposition: form-data; name="photos[]"; filename="post.jpg"${CRLF}Content-Type: image/jpeg${CRLF}${CRLF}`),
           imgBuffer,
           Buffer.from(CRLF),
         ]);
-
-        const closingPart = Buffer.from(`--${boundary}--${CRLF}`);
-
         const body = Buffer.concat([
           buildPart("user", "Quill"),
           buildPart("title", postText),
           buildPart("platform[]", "instagram"),
           filePart,
-          closingPart,
+          Buffer.from(`--${boundary}--${CRLF}`),
         ]);
-
-        console.log("Sending to Upload-Post photos endpoint...");
-        console.log("Body starts with:", body.slice(0, 200).toString());
-
         const response = await fetch("https://api.upload-post.com/api/upload_photos", {
           method: "POST",
-          headers: {
-            "Authorization": `Apikey ${uploadKey}`,
-            "Content-Type": `multipart/form-data; boundary=${boundary}`,
-            "Content-Length": body.length,
-          },
+          headers: { "Authorization": `Apikey ${uploadKey}`, "Content-Type": `multipart/form-data; boundary=${boundary}`, "Content-Length": body.length },
           body: body,
         });
         const raw = await response.text();
-        console.log("Instagram response status:", response.status);
         console.log("Instagram response:", raw.slice(0, 300));
         try { results.push(JSON.parse(raw)); } catch { results.push({ error: raw.slice(0, 100) }); }
       }
@@ -215,30 +204,27 @@ app.post("/api/publish", async (req, res) => {
   }
 });
 
-// Stripe - create checkout session
+// Stripe checkout
 app.post("/api/stripe/checkout", async (req, res) => {
   try {
     const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
     const { userId, userEmail, plan } = req.body;
-
     const priceMap = {
       starter: process.env.STRIPE_STARTER_PRICE,
-      growth:  process.env.STRIPE_GROWTH_PRICE,
-      agency:  process.env.STRIPE_AGENCY_PRICE,
+      growth: process.env.STRIPE_GROWTH_PRICE,
+      agency: process.env.STRIPE_AGENCY_PRICE,
     };
     const priceId = priceMap[plan];
     if (!priceId) return res.status(400).json({ error: "Invalid plan: " + plan });
-
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       mode: "subscription",
       customer_email: userEmail,
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: "http://localhost:3000?payment=success&plan=" + plan,
-      cancel_url: "http://localhost:3000?payment=cancelled",
+      success_url: "https://getquill.org?payment=success&plan=" + plan,
+      cancel_url: "https://getquill.org?payment=cancelled",
       metadata: { userId, plan },
     });
-
     res.json({ url: session.url });
   } catch (err) {
     console.log("Stripe error:", err.message);
@@ -246,7 +232,7 @@ app.post("/api/stripe/checkout", async (req, res) => {
   }
 });
 
-// Stripe - get subscription status
+// Stripe status
 app.post("/api/stripe/status", async (req, res) => {
   try {
     const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
@@ -269,7 +255,7 @@ app.post("/api/stripe/status", async (req, res) => {
   }
 });
 
-// Create Upload-Post user profile
+// Social account management
 app.post("/api/social/create-profile", async (req, res) => {
   try {
     const key = process.env.UPLOADPOST_KEY;
@@ -280,14 +266,12 @@ app.post("/api/social/create-profile", async (req, res) => {
       body: JSON.stringify({ username }),
     });
     const data = await response.json();
-    console.log("Create profile:", JSON.stringify(data).slice(0, 200));
     res.json(data);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// Generate social connect link for a user
 app.post("/api/social/connect-link", async (req, res) => {
   try {
     const key = process.env.UPLOADPOST_KEY;
@@ -298,14 +282,12 @@ app.post("/api/social/connect-link", async (req, res) => {
       body: JSON.stringify({ username }),
     });
     const data = await response.json();
-    console.log("Connect link:", JSON.stringify(data).slice(0, 200));
     res.json(data);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// Get user connected social accounts
 app.post("/api/social/accounts", async (req, res) => {
   try {
     const key = process.env.UPLOADPOST_KEY;
@@ -320,7 +302,7 @@ app.post("/api/social/accounts", async (req, res) => {
   }
 });
 
-// ─── AUTOMATED POSTING ENGINE ────────────────────────────────────────────────
+// Automated posting engine
 async function generateCaption(theme, brandVoice) {
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
@@ -340,43 +322,33 @@ async function generateCaption(theme, brandVoice) {
   return data?.content?.[0]?.text || "";
 }
 
-async function generateImage(theme) {
+async function generateImageForCron(theme) {
   const res = await fetch("https://api.openai.com/v1/images/generations", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${process.env.OPENAI_KEY}`,
-    },
+    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${process.env.OPENAI_KEY}` },
     body: JSON.stringify({
       model: "gpt-image-1",
-      prompt: `Professional marketing image for social media. Theme: ${theme}. Clean, eye-catching boutique brand style.`,
-      n: 1,
-      size: "1024x1024",
-      output_format: "png",
+      prompt: `Professional marketing image for social media. Theme: ${theme}. Clean boutique brand style.`,
+      n: 1, size: "1024x1024", output_format: "png",
     }),
   });
   const data = await res.json();
-  if (data.data?.[0]?.b64_json) {
-    return `data:image/png;base64,${data.data[0].b64_json}`;
-  }
+  if (data.data?.[0]?.b64_json) return `data:image/png;base64,${data.data[0].b64_json}`;
   return null;
 }
 
 async function publishCampaignPost(campaign) {
   try {
     console.log(`Auto-posting campaign: ${campaign.name}`);
-    
     const caption = await generateCaption(campaign.theme, campaign.brand_voice);
     if (!caption) throw new Error("Could not generate caption");
 
     const uploadKey = process.env.UPLOADPOST_KEY;
     const platforms = campaign.platforms || [];
-    const username = "Quill"; // TODO: map to user's Upload-Post profile when multi-user is set up
-
+    const username = "Quill";
     const textPlatforms = platforms.filter(p => p !== "instagram");
     const imagePlatforms = platforms.filter(p => p === "instagram");
 
-    // Post to text platforms
     if (textPlatforms.length > 0) {
       const params = new URLSearchParams();
       params.append("user", username);
@@ -391,13 +363,11 @@ async function publishCampaignPost(campaign) {
       console.log("Text post result:", textData.slice(0, 200));
     }
 
-    // Post to Instagram with image
     if (imagePlatforms.length > 0) {
-      const imageUrl = await generateImage(campaign.theme);
+      const imageUrl = await generateImageForCron(campaign.theme);
       if (imageUrl) {
         const base64Data = imageUrl.replace(/^data:image\/\w+;base64,/, "");
         const imgBuffer = Buffer.from(base64Data, "base64");
-
         const boundary = "----QuillCron" + Date.now();
         const CRLF = "\r\n";
         const buildPart = (name, value) => Buffer.from(`--${boundary}${CRLF}Content-Disposition: form-data; name="${name}"${CRLF}${CRLF}${value}${CRLF}`);
@@ -413,14 +383,9 @@ async function publishCampaignPost(campaign) {
           filePart,
           Buffer.from(`--${boundary}--${CRLF}`),
         ]);
-
         const photoRes = await fetch("https://api.upload-post.com/api/upload_photos", {
           method: "POST",
-          headers: {
-            "Authorization": `Apikey ${uploadKey}`,
-            "Content-Type": `multipart/form-data; boundary=${boundary}`,
-            "Content-Length": body.length,
-          },
+          headers: { "Authorization": `Apikey ${uploadKey}`, "Content-Type": `multipart/form-data; boundary=${boundary}`, "Content-Length": body.length },
           body: body,
         });
         const photoData = await photoRes.text();
@@ -428,48 +393,37 @@ async function publishCampaignPost(campaign) {
       }
     }
 
-    // Update campaign in Supabase
     await getSupabase().from("campaigns").update({
       posts_published: (campaign.posts_published || 0) + 1,
       last_post: caption.slice(0, 55) + "...",
     }).eq("id", campaign.id);
 
-    console.log(`Successfully posted campaign: ${campaign.name}`);
+    console.log(`Successfully posted: ${campaign.name}`);
   } catch (e) {
-    console.log(`Failed to post campaign ${campaign.name}:`, e.message);
+    console.log(`Failed to post ${campaign.name}:`, e.message);
   }
 }
 
 function shouldPostNow(campaign) {
   const now = new Date();
-  const currentHour = now.getHours().toString().padStart(2, "0");
-  const currentMin = now.getMinutes().toString().padStart(2, "0");
-  const currentTime = `${currentHour}:${currentMin}`;
-  const currentDay = now.getDay(); // 0=Sun, 1=Mon...5=Fri, 6=Sat
+  const currentTime = `${now.getHours().toString().padStart(2,"0")}:${now.getMinutes().toString().padStart(2,"0")}`;
+  const currentDay = now.getDay();
   const isWeekday = currentDay >= 1 && currentDay <= 5;
-
   if (!campaign.post_time || campaign.post_time !== currentTime) return false;
   if (campaign.status !== "active") return false;
-
   switch (campaign.frequency) {
     case "daily": return true;
     case "weekdays": return isWeekday;
-    case "weekly": return currentDay === 1; // Every Monday
-    case "twice_week": return currentDay === 1 || currentDay === 4; // Mon & Thu
+    case "weekly": return currentDay === 1;
+    case "twice_week": return currentDay === 1 || currentDay === 4;
     default: return false;
   }
 }
 
-// Run every minute — check for campaigns due to post
 cron.schedule("* * * * *", async () => {
   try {
-    const { data: campaigns, error } = await getSupabase()
-      .from("campaigns")
-      .select("*")
-      .eq("status", "active");
-
+    const { data: campaigns, error } = await getSupabase().from("campaigns").select("*").eq("status", "active");
     if (error || !campaigns?.length) return;
-
     for (const campaign of campaigns) {
       if (shouldPostNow(campaign)) {
         console.log(`Cron triggered post for: ${campaign.name}`);
@@ -482,41 +436,5 @@ cron.schedule("* * * * *", async () => {
 });
 
 console.log("Automated posting engine started — checking every minute");
-
-// Get real analytics from Upload-Post
-app.get("/api/analytics/stats", async (req, res) => {
-  try {
-    const key = process.env.UPLOADPOST_KEY;
-    const profile = req.query.username || "Quill";
-
-    console.log("Fetching analytics for:", profile);
-
-    // Get total impressions
-    const impressionsRes = await fetch(`https://api.upload-post.com/api/uploadposts/total-impressions/${encodeURIComponent(profile)}`, {
-      headers: { "Authorization": `Apikey ${key}` },
-    });
-    const impressionsText = await impressionsRes.text();
-    console.log("Impressions raw:", impressionsText.slice(0, 200));
-    let impressionsData = {};
-    try { impressionsData = JSON.parse(impressionsText); } catch(e) { console.log("Impressions parse error:", e.message); }
-
-    // Get upload history
-    const historyRes = await fetch(`https://api.upload-post.com/api/uploadposts/history?user=${encodeURIComponent(profile)}&limit=10`, {
-      headers: { "Authorization": `Apikey ${key}` },
-    });
-    const historyText = await historyRes.text();
-    console.log("History raw:", historyText.slice(0, 200));
-    let historyData = {};
-    try { historyData = JSON.parse(historyText); } catch(e) { console.log("History parse error:", e.message); }
-
-    res.json({
-      impressions: impressionsData,
-      history: historyData,
-    });
-  } catch (err) {
-    console.log("Analytics error:", err.message);
-    res.status(500).json({ error: err.message });
-  }
-});
 
 app.listen(3001, () => console.log("Server running on port 3001"));
