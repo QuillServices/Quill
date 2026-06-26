@@ -210,9 +210,12 @@ app.post("/api/stripe/checkout", async (req, res) => {
     const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
     const { userId, userEmail, plan } = req.body;
     const priceMap = {
-      starter: process.env.STRIPE_STARTER_PRICE,
-      growth: process.env.STRIPE_GROWTH_PRICE,
-      agency: process.env.STRIPE_AGENCY_PRICE,
+      starter:        process.env.STRIPE_STARTER_PRICE,
+      starter_annual: process.env.STRIPE_STARTER_ANNUAL_PRICE,
+      growth:         process.env.STRIPE_GROWTH_PRICE,
+      growth_annual:  process.env.STRIPE_GROWTH_ANNUAL_PRICE,
+      agency:         process.env.STRIPE_AGENCY_PRICE,
+      agency_annual:  process.env.STRIPE_AGENCY_ANNUAL_PRICE,
     };
     const priceId = priceMap[plan];
     if (!priceId) return res.status(400).json({ error: "Invalid plan: " + plan });
