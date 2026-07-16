@@ -12,36 +12,36 @@ const supabase = createClient(
 // ─── DESIGN TOKENS — PREMIUM CHARCOAL ─────────────────────────────────────────
 const T = {
   // Backgrounds — deep charcoal family
-  bg:           "#18181b",   // main canvas
-  bgSoft:       "#1c1c1f",   // slightly lifted
-  bgMuted:      "#222226",   // cards, inputs
-  bgHover:      "#28282d",   // hover states
-  bgStrong:     "#2e2e34",   // active / selected
+  bg:           "#14110D",   // main canvas
+  bgSoft:       "#181410",   // slightly lifted
+  bgMuted:      "#1A150F",   // cards, inputs
+  bgHover:      "#221B14",   // hover states
+  bgStrong:     "#261F18",   // active / selected
 
   // Borders
-  border:       "#2e2e34",
-  borderStrong: "#3e3e46",
-  borderBright: "#52525e",
+  border:       "rgba(242,234,219,.09)",
+  borderStrong: "rgba(242,234,219,.16)",
+  borderBright: "rgba(242,234,219,.28)",
 
   // Text
-  ink:          "#f4f4f5",   // primary white
-  inkSoft:      "#e4e4e7",   // slightly softer white
-  inkMid:       "#a1a1aa",   // secondary
-  inkLight:     "#71717a",   // tertiary
-  inkMuted:     "#3f3f46",   // disabled / placeholder
+  ink:          "#F2EADB",   // primary white
+  inkSoft:      "#E4DACA",   // slightly softer white
+  inkMid:       "#A89B86",   // secondary
+  inkLight:     "#7E7466",   // tertiary
+  inkMuted:     "#574F44",   // disabled / placeholder
 
   // Accent — slick white glow
-  accent:       "#ffffff",
-  accentSoft:   "#f4f4f5",
-  accentMuted:  "#e4e4e7",
+  accent:       "#FF5B2E",
+  accentSoft:   "#FF7B52",
+  accentMuted:  "#E14E24",
 
   // Semantic
   crimson:      "#f87171",
   crimsonSoft:  "#1f1215",
   crimsonMid:   "#3d1f24",
-  gold:         "#fbbf24",
+  gold:         "#F4B740",
   goldSoft:     "#1c1710",
-  green:        "#4ade80",
+  green:        "#34D27B",
   greenSoft:    "#0d1f14",
 
   // Shadows
@@ -139,7 +139,7 @@ function UsageBanner({ currentPlan, campaigns, posts, images }) {
         </div>
         <div style={{ fontSize:12, color:T.inkMid }}>{items.map(i=>`${i.label}: ${i.used}/${i.limit}`).join(" · ")}</div>
       </div>
-      <button onClick={() => window.location.hash="billing"} style={{ padding:"7px 16px", borderRadius:6, background:T.accent, border:"none", color:T.bg, fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"'Inter',sans-serif", whiteSpace:"nowrap" }}>Upgrade</button>
+      <button onClick={() => window.location.hash="billing"} style={{ padding:"7px 16px", borderRadius:6, background:T.accent, border:"none", color:"#fff", fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"'Space Grotesk',sans-serif", whiteSpace:"nowrap" }}>Upgrade</button>
     </div>
   );
 }
@@ -181,7 +181,7 @@ function Card({ children, style:extra={} }) {
 
 function Btn({ children, onClick, disabled, variant="primary", small=false, full=true }) {
   const styles = {
-    primary:   { bg: disabled?T.bgStrong:T.accent,    color: disabled?T.inkMuted:T.bg,      border:"none" },
+    primary:   { bg: disabled?T.bgStrong:T.accent,    color: disabled?T.inkMuted:"#fff",      border:"none" },
     secondary: { bg: T.bgMuted,                        color: T.inkSoft,                     border:`1px solid ${T.border}` },
     danger:    { bg: T.crimsonSoft,                    color: T.crimson,                     border:`1px solid ${T.crimsonMid}` },
     ghost:     { bg: "transparent",                    color: T.inkMid,                      border:`1px solid ${T.border}` },
@@ -193,14 +193,14 @@ function Btn({ children, onClick, disabled, variant="primary", small=false, full
       borderRadius:8, background:s.bg, color:s.color, border:s.border,
       fontSize: small?12:13, fontWeight:600,
       cursor: disabled?"not-allowed":"pointer",
-      fontFamily:"'Inter',sans-serif", transition:"all 0.15s",
+      fontFamily:"'Space Grotesk',sans-serif", transition:"all 0.15s",
       width: full?"100%":"auto", letterSpacing:"0.01em",
     }}>{children}</button>
   );
 }
 
 function Label({ children }) {
-  return <div style={{ fontSize:11, fontWeight:600, color:T.inkLight, letterSpacing:"0.09em", textTransform:"uppercase", marginBottom:7, fontFamily:"'Inter',sans-serif" }}>{children}</div>;
+  return <div style={{ fontSize:11, fontWeight:600, color:T.inkLight, letterSpacing:"0.09em", textTransform:"uppercase", marginBottom:7, fontFamily:"'Space Grotesk',sans-serif" }}>{children}</div>;
 }
 
 function Input({ value, onChange, placeholder, type="text", required=false }) {
@@ -208,7 +208,7 @@ function Input({ value, onChange, placeholder, type="text", required=false }) {
     <input type={type} value={value} onChange={onChange} placeholder={placeholder} required={required} style={{
       width:"100%", background:T.bgStrong, border:`1px solid ${T.border}`,
       borderRadius:8, padding:"10px 13px", color:T.ink, fontSize:13,
-      outline:"none", fontFamily:"'Inter',sans-serif", boxSizing:"border-box",
+      outline:"none", fontFamily:"'Space Grotesk',sans-serif", boxSizing:"border-box",
       transition:"border-color 0.15s",
     }}/>
   );
@@ -219,7 +219,7 @@ function Textarea({ value, onChange, placeholder, height=80 }) {
     <textarea value={value} onChange={onChange} placeholder={placeholder} style={{
       width:"100%", background:T.bgStrong, border:`1px solid ${T.border}`,
       borderRadius:8, padding:"10px 13px", color:T.ink, fontSize:13,
-      resize:"none", height, outline:"none", fontFamily:"'Inter',sans-serif",
+      resize:"none", height, outline:"none", fontFamily:"'Space Grotesk',sans-serif",
       lineHeight:1.6, boxSizing:"border-box",
     }}/>
   );
@@ -234,7 +234,7 @@ function Badge({ children, color="default" }) {
     white:   { bg:"rgba(255,255,255,0.08)", color:T.inkSoft },
   };
   const c = colors[color]||colors.default;
-  return <span style={{ fontSize:10, fontWeight:700, padding:"3px 9px", borderRadius:20, background:c.bg, color:c.color, letterSpacing:"0.07em", fontFamily:"'Inter',sans-serif" }}>{children}</span>;
+  return <span style={{ fontSize:10, fontWeight:700, padding:"3px 9px", borderRadius:20, background:c.bg, color:c.color, letterSpacing:"0.07em", fontFamily:"'Space Grotesk',sans-serif" }}>{children}</span>;
 }
 
 function Divider() {
@@ -781,17 +781,17 @@ function AuthScreen({ onAuth, initialMode="login" }) {
   };
 
   return (
-    <div style={{ minHeight:"100vh", background:T.bg, display:"flex", alignItems:"center", justifyContent:"center", fontFamily:"'Inter',sans-serif", padding:20 }}>
+    <div style={{ minHeight:"100vh", background:T.bg, display:"flex", alignItems:"center", justifyContent:"center", fontFamily:"'Space Grotesk',sans-serif", padding:20 }}>
       <div style={{ width:"100%", maxWidth:380 }}>
         <div style={{ textAlign:"center", marginBottom:28 }}>
           <div style={{ display:"inline-flex", alignItems:"center", gap:10, marginBottom:10 }}>
             <QuillLogo size={36}/>
-            <span style={{ fontSize:22, fontWeight:800, color:T.ink, letterSpacing:"-0.5px" }}>Quill</span>
+            <span style={{ fontFamily:"Instrument Serif, serif", fontSize:26, fontWeight:400, color:T.ink }}>Quill</span>
           </div>
           <p style={{ fontSize:13, color:T.inkMid, margin:0 }}>Marketing Agent</p>
         </div>
         <div style={{ background:T.bgMuted, borderRadius:14, border:`1px solid ${T.border}`, padding:28 }}>
-          <h2 style={{ fontSize:18, fontWeight:700, color:T.ink, margin:"0 0 3px" }}>
+          <h2 style={{ fontFamily:"Instrument Serif, serif", fontSize:26, fontWeight:400, color:T.ink, margin:"0 0 5px" }}>
             {mode==="login" ? "Welcome back" : "Start your free trial"}
           </h2>
           <p style={{ fontSize:13, color:T.inkMid, margin:"0 0 22px" }}>
@@ -804,15 +804,15 @@ function AuthScreen({ onAuth, initialMode="login" }) {
             <div><Label>Email</Label><Input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@example.com" required/></div>
             <div><Label>Password</Label><Input type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="••••••••" required/></div>
             <div style={{ marginTop:4 }}>
-              <button type="submit" disabled={loading} style={{ width:"100%", padding:"11px 0", borderRadius:8, background:loading?T.bgStrong:T.accent, border:"none", color:loading?T.inkMuted:T.bg, fontSize:13, fontWeight:700, cursor:loading?"not-allowed":"pointer", fontFamily:"'Inter',sans-serif" }}>
+              <button type="submit" disabled={loading} style={{ width:"100%", padding:"11px 0", borderRadius:8, background:loading?T.bgStrong:T.accent, border:"none", color:loading?T.inkMuted:"#fff", fontSize:13, fontWeight:700, cursor:loading?"not-allowed":"pointer", fontFamily:"'Space Grotesk',sans-serif" }}>
                 {loading ? "Please wait…" : (mode==="login" ? "Sign in" : "Create account")}
               </button>
             </div>
           </form>
           <div style={{ marginTop:18, textAlign:"center", fontSize:13, color:T.inkMid }}>
             {mode==="login"
-              ? <>Don't have an account? <button onClick={()=>{setMode("signup");setError("");}} style={{ background:"none", border:"none", color:T.inkSoft, cursor:"pointer", fontWeight:600, fontSize:13, fontFamily:"'Inter',sans-serif" }}>Start free trial</button></>
-              : <>Already have an account? <button onClick={()=>{setMode("login");setError("");}} style={{ background:"none", border:"none", color:T.inkSoft, cursor:"pointer", fontWeight:600, fontSize:13, fontFamily:"'Inter',sans-serif" }}>Sign in</button></>
+              ? <>Don't have an account? <button onClick={()=>{setMode("signup");setError("");}} style={{ background:"none", border:"none", color:T.inkSoft, cursor:"pointer", fontWeight:600, fontSize:13, fontFamily:"'Space Grotesk',sans-serif" }}>Start free trial</button></>
+              : <>Already have an account? <button onClick={()=>{setMode("login");setError("");}} style={{ background:"none", border:"none", color:T.inkSoft, cursor:"pointer", fontWeight:600, fontSize:13, fontFamily:"'Space Grotesk',sans-serif" }}>Sign in</button></>
             }
           </div>
         </div>
@@ -924,8 +924,8 @@ function CampaignsView({ user }) {
   if (subTab==="brandkit") return (
     <div>
       <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:28}}>
-        <button onClick={()=>setSubTab("campaigns")} style={{padding:"7px 14px",borderRadius:7,background:T.bgMuted,border:`1px solid ${T.border}`,color:T.inkMid,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"'Inter',sans-serif"}}>← Back</button>
-        <h2 style={{fontSize:22,fontWeight:700,color:T.ink,margin:0,letterSpacing:"-0.5px"}}>Brand Kit</h2>
+        <button onClick={()=>setSubTab("campaigns")} style={{padding:"7px 14px",borderRadius:7,background:T.bgMuted,border:`1px solid ${T.border}`,color:T.inkMid,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"'Space Grotesk',sans-serif"}}>← Back</button>
+        <h2 style={{fontFamily:"Instrument Serif, serif",fontSize:26,fontWeight:400,color:T.ink,margin:0}}>Brand Kit</h2>
       </div>
       <BrandKitView user={user}/>
     </div>
@@ -934,8 +934,8 @@ function CampaignsView({ user }) {
   if (view==="create") return (
     <div>
       <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:28}}>
-        <button onClick={()=>{setView("list");setError("");}} style={{padding:"7px 14px",borderRadius:7,background:T.bgMuted,border:`1px solid ${T.border}`,color:T.inkMid,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"'Inter',sans-serif"}}>← Back</button>
-        <h2 style={{fontSize:22,fontWeight:700,color:T.ink,margin:0,letterSpacing:"-0.5px"}}>New Campaign</h2>
+        <button onClick={()=>{setView("list");setError("");}} style={{padding:"7px 14px",borderRadius:7,background:T.bgMuted,border:`1px solid ${T.border}`,color:T.inkMid,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"'Space Grotesk',sans-serif"}}>← Back</button>
+        <h2 style={{fontFamily:"Instrument Serif, serif",fontSize:26,fontWeight:400,color:T.ink,margin:0}}>New Campaign</h2>
       </div>
       {error && <div style={{background:T.crimsonSoft,border:`1px solid ${T.crimsonMid}`,borderRadius:8,padding:"10px 13px",fontSize:13,color:T.crimson,marginBottom:16}}>{error}</div>}
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:24}}>
@@ -947,7 +947,7 @@ function CampaignsView({ user }) {
             <Label>Platforms</Label>
             <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
               {PLATFORMS.map(p=>(
-                <button key={p.id} onClick={()=>togglePlat(p.id)} style={{padding:"7px 14px",borderRadius:20,fontSize:12,fontWeight:600,background:form.platforms.includes(p.id)?p.color+"22":T.bgStrong,border:`1px solid ${form.platforms.includes(p.id)?p.color:T.border}`,color:form.platforms.includes(p.id)?p.color:T.inkMid,cursor:"pointer",fontFamily:"'Inter',sans-serif"}}>{p.icon} {p.label}</button>
+                <button key={p.id} onClick={()=>togglePlat(p.id)} style={{padding:"7px 14px",borderRadius:20,fontSize:12,fontWeight:600,background:form.platforms.includes(p.id)?p.color+"22":T.bgStrong,border:`1px solid ${form.platforms.includes(p.id)?p.color:T.border}`,color:form.platforms.includes(p.id)?p.color:T.inkMid,cursor:"pointer",fontFamily:"'Space Grotesk',sans-serif"}}>{p.icon} {p.label}</button>
               ))}
             </div>
           </div>
@@ -955,14 +955,14 @@ function CampaignsView({ user }) {
             <Label>Frequency</Label>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
               {FREQUENCIES.map(f=>(
-                <button key={f.id} onClick={()=>setField("frequency",f.id)} style={{padding:"9px 12px",borderRadius:8,background:form.frequency===f.id?T.accent:T.bgStrong,border:`1px solid ${form.frequency===f.id?T.accent:T.border}`,color:form.frequency===f.id?T.bg:T.inkMid,cursor:"pointer",fontSize:12,fontWeight:600,textAlign:"left",fontFamily:"'Inter',sans-serif"}}>{f.label}</button>
+                <button key={f.id} onClick={()=>setField("frequency",f.id)} style={{padding:"9px 12px",borderRadius:8,background:form.frequency===f.id?T.accent:T.bgStrong,border:`1px solid ${form.frequency===f.id?T.accent:T.border}`,color:form.frequency===f.id?"#fff":T.inkMid,cursor:"pointer",fontSize:12,fontWeight:600,textAlign:"left",fontFamily:"'Space Grotesk',sans-serif"}}>{f.label}</button>
               ))}
             </div>
           </div>
           <div><Label>Post time</Label><Input type="time" value={form.postTime} onChange={e=>setField("postTime",e.target.value)}/></div>
           <div style={{display:"flex",gap:10}}>
-            <button onClick={generatePreview} disabled={generatingPreview||!form.theme.trim()} style={{flex:1,padding:"10px 0",borderRadius:8,background:T.bgStrong,border:`1px solid ${T.border}`,color:T.inkMid,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"'Inter',sans-serif"}}>{generatingPreview?"Generating…":"Preview"}</button>
-            <button onClick={createCampaign} disabled={loading} style={{flex:2,padding:"10px 0",borderRadius:8,background:loading?T.bgStrong:T.accent,border:"none",color:loading?T.inkMuted:T.bg,fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"'Inter',sans-serif"}}>{loading?"Launching…":"Launch Campaign"}</button>
+            <button onClick={generatePreview} disabled={generatingPreview||!form.theme.trim()} style={{flex:1,padding:"10px 0",borderRadius:8,background:T.bgStrong,border:`1px solid ${T.border}`,color:T.inkMid,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"'Space Grotesk',sans-serif"}}>{generatingPreview?"Generating…":"Preview"}</button>
+            <button onClick={createCampaign} disabled={loading} style={{flex:2,padding:"10px 0",borderRadius:8,background:loading?T.bgStrong:T.accent,border:"none",color:loading?T.inkMuted:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"'Space Grotesk',sans-serif"}}>{loading?"Launching…":"Launch Campaign"}</button>
           </div>
         </div>
         <div>
@@ -990,12 +990,12 @@ function CampaignsView({ user }) {
       <UsageBanner currentPlan="trial" campaigns={campaigns.length} posts={campaigns.reduce((s,c)=>s+(c.posts_published||0),0)} images={0}/>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:28}}>
         <div>
-          <h2 style={{fontSize:24,fontWeight:700,color:T.ink,margin:0,letterSpacing:"-0.5px"}}>Campaigns</h2>
+          <h2 style={{fontFamily:"Instrument Serif, serif",fontSize:30,fontWeight:400,color:T.ink,margin:0}}>Campaigns</h2>
           <p style={{fontSize:13,color:T.inkMid,marginTop:4}}>Set a theme and a schedule — Quill publishes automatically</p>
         </div>
         <div style={{display:"flex",gap:10}}>
-          <button onClick={()=>setSubTab("brandkit")} style={{padding:"8px 16px",borderRadius:8,background:T.bgMuted,border:`1px solid ${T.border}`,color:T.inkMid,fontSize:13,fontWeight:500,cursor:"pointer",fontFamily:"'Inter',sans-serif"}}>🎨 Brand Kit</button>
-          <button onClick={()=>{setView("create");setError("");}} style={{padding:"8px 18px",borderRadius:8,background:T.accent,border:"none",color:T.bg,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"'Inter',sans-serif"}}>+ New Campaign</button>
+          <button onClick={()=>setSubTab("brandkit")} style={{padding:"8px 16px",borderRadius:8,background:T.bgMuted,border:`1px solid ${T.border}`,color:T.inkMid,fontSize:13,fontWeight:500,cursor:"pointer",fontFamily:"'Space Grotesk',sans-serif"}}>🎨 Brand Kit</button>
+          <button onClick={()=>{setView("create");setError("");}} style={{padding:"8px 18px",borderRadius:8,background:T.accent,border:"none",color:"#fff",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"'Space Grotesk',sans-serif"}}>+ New Campaign</button>
         </div>
       </div>
 
@@ -1008,7 +1008,7 @@ function CampaignsView({ user }) {
           <div style={{width:52,height:52,borderRadius:12,background:T.bgStrong,border:`1px solid ${T.borderStrong}`,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 20px",fontSize:22,color:T.inkMid}}>✦</div>
           <h3 style={{fontSize:18,fontWeight:700,color:T.ink,margin:"0 0 8px"}}>No campaigns yet</h3>
           <p style={{fontSize:13,color:T.inkMid,maxWidth:320,margin:"0 auto 24px",lineHeight:1.6}}>Create your first campaign and let Quill generate and publish content automatically</p>
-          <button onClick={()=>setView("create")} style={{padding:"10px 24px",borderRadius:8,background:T.accent,border:"none",color:T.bg,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"'Inter',sans-serif"}}>Create first campaign</button>
+          <button onClick={()=>setView("create")} style={{padding:"10px 24px",borderRadius:8,background:T.accent,border:"none",color:"#fff",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"'Space Grotesk',sans-serif"}}>Create first campaign</button>
         </Card>
       ) : (
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(320px,1fr))",gap:14}}>
@@ -1034,8 +1034,8 @@ function CampaignsView({ user }) {
               </div>
               {c.last_post && <p style={{fontSize:12,color:T.inkMid,fontStyle:"italic",margin:0}}>Last: "{c.last_post}"</p>}
               <div style={{display:"flex",gap:8}}>
-                <button onClick={()=>openPostModal(c)} style={{flex:1,padding:"7px 0",borderRadius:7,background:T.bgStrong,border:`1px solid ${T.border}`,color:T.inkMid,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"'Inter',sans-serif"}}>▶ Post now</button>
-                <button onClick={()=>toggleStatus(c)} style={{flex:1,padding:"7px 0",borderRadius:7,background:T.bgStrong,border:`1px solid ${T.border}`,color:c.status==="active"?T.gold:T.green,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"'Inter',sans-serif"}}>{c.status==="active"?"⏸ Pause":"▶ Resume"}</button>
+                <button onClick={()=>openPostModal(c)} style={{flex:1,padding:"7px 0",borderRadius:7,background:T.bgStrong,border:`1px solid ${T.border}`,color:T.inkMid,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"'Space Grotesk',sans-serif"}}>▶ Post now</button>
+                <button onClick={()=>toggleStatus(c)} style={{flex:1,padding:"7px 0",borderRadius:7,background:T.bgStrong,border:`1px solid ${T.border}`,color:c.status==="active"?T.gold:T.green,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"'Space Grotesk',sans-serif"}}>{c.status==="active"?"⏸ Pause":"▶ Resume"}</button>
                 <button onClick={()=>deleteCampaign(c.id)} style={{padding:"7px 12px",borderRadius:7,background:T.crimsonSoft,border:`1px solid ${T.crimsonMid}`,color:T.crimson,fontSize:12,cursor:"pointer"}}>✕</button>
               </div>
             </Card>
@@ -1071,8 +1071,8 @@ function CampaignsView({ user }) {
                 <div style={{border:`1px dashed ${T.borderStrong}`,borderRadius:10,padding:22,textAlign:"center",marginBottom:10}}>
                   <p style={{fontSize:13,color:T.inkMid,marginBottom:12}}>No image selected</p>
                   <div style={{display:"flex",gap:10,justifyContent:"center"}}>
-                    <button onClick={generatePostImage} disabled={generatingPostImage} style={{padding:"7px 14px",borderRadius:7,background:T.accent,border:"none",color:T.bg,fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"'Inter',sans-serif"}}>{generatingPostImage?"Generating…":"✦ Generate image"}</button>
-                    <label style={{padding:"7px 14px",borderRadius:7,background:T.bgStrong,border:`1px solid ${T.border}`,color:T.inkMid,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"'Inter',sans-serif"}}>
+                    <button onClick={generatePostImage} disabled={generatingPostImage} style={{padding:"7px 14px",borderRadius:7,background:T.accent,border:"none",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"'Space Grotesk',sans-serif"}}>{generatingPostImage?"Generating…":"✦ Generate image"}</button>
+                    <label style={{padding:"7px 14px",borderRadius:7,background:T.bgStrong,border:`1px solid ${T.border}`,color:T.inkMid,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"'Space Grotesk',sans-serif"}}>
                       ↑ Upload
                       <input type="file" accept="image/*" onChange={handleImageUpload} style={{display:"none"}}/>
                     </label>
@@ -1081,8 +1081,8 @@ function CampaignsView({ user }) {
               )}
             </div>
             <div style={{display:"flex",gap:10}}>
-              <button onClick={()=>setPostModal(null)} style={{flex:1,padding:"10px 0",borderRadius:8,background:T.bgStrong,border:`1px solid ${T.border}`,color:T.inkMid,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"'Inter',sans-serif"}}>Cancel</button>
-              <button onClick={publishPost} disabled={publishing||!postCaption.trim()} style={{flex:2,padding:"10px 0",borderRadius:8,background:publishing||!postCaption.trim()?T.bgStrong:T.accent,border:"none",color:publishing||!postCaption.trim()?T.inkMuted:T.bg,fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"'Inter',sans-serif"}}>{publishing?"Publishing…":"Publish post"}</button>
+              <button onClick={()=>setPostModal(null)} style={{flex:1,padding:"10px 0",borderRadius:8,background:T.bgStrong,border:`1px solid ${T.border}`,color:T.inkMid,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"'Space Grotesk',sans-serif"}}>Cancel</button>
+              <button onClick={publishPost} disabled={publishing||!postCaption.trim()} style={{flex:2,padding:"10px 0",borderRadius:8,background:publishing||!postCaption.trim()?T.bgStrong:T.accent,border:"none",color:publishing||!postCaption.trim()?T.inkMuted:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"'Space Grotesk',sans-serif"}}>{publishing?"Publishing…":"Publish post"}</button>
             </div>
           </div>
         </div>
@@ -1113,7 +1113,7 @@ function CopywriterView() {
   return (
     <div>
       <div style={{marginBottom:28}}>
-        <h2 style={{fontSize:24,fontWeight:700,color:T.ink,margin:0,letterSpacing:"-0.5px"}}>Copywriter</h2>
+        <h2 style={{fontFamily:"Instrument Serif, serif",fontSize:30,fontWeight:400,color:T.ink,margin:0}}>Copywriter</h2>
         <p style={{fontSize:13,color:T.inkMid,marginTop:4}}>Generate on-brand marketing copy in seconds</p>
       </div>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20}}>
@@ -1121,14 +1121,14 @@ function CopywriterView() {
           <div>
             <Label>Content type</Label>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-              {COPY_TYPES.map(t=><button key={t.id} onClick={()=>setCopyType(t)} style={{padding:"9px 12px",borderRadius:8,background:copyType.id===t.id?T.accent:T.bgStrong,border:`1px solid ${copyType.id===t.id?T.accent:T.border}`,color:copyType.id===t.id?T.bg:T.inkMid,cursor:"pointer",fontSize:12,fontWeight:600,textAlign:"left",fontFamily:"'Inter',sans-serif"}}>{t.label}</button>)}
+              {COPY_TYPES.map(t=><button key={t.id} onClick={()=>setCopyType(t)} style={{padding:"9px 12px",borderRadius:8,background:copyType.id===t.id?T.accent:T.bgStrong,border:`1px solid ${copyType.id===t.id?T.accent:T.border}`,color:copyType.id===t.id?"#fff":T.inkMid,cursor:"pointer",fontSize:12,fontWeight:600,textAlign:"left",fontFamily:"'Space Grotesk',sans-serif"}}>{t.label}</button>)}
             </div>
           </div>
           <div><Label>What's it about?</Label><Textarea value={topic} onChange={e=>setTopic(e.target.value)} placeholder="e.g. Summer sale — 40% off all shoes this weekend"/></div>
           <div>
             <Label>Tone</Label>
             <div style={{display:"flex",flexWrap:"wrap",gap:7}}>
-              {TONES.map(t=><button key={t} onClick={()=>setTone(t)} style={{padding:"6px 13px",borderRadius:20,background:tone===t?T.accent:T.bgStrong,border:`1px solid ${tone===t?T.accent:T.border}`,color:tone===t?T.bg:T.inkMid,cursor:"pointer",fontSize:12,fontWeight:600,fontFamily:"'Inter',sans-serif"}}>{t}</button>)}
+              {TONES.map(t=><button key={t} onClick={()=>setTone(t)} style={{padding:"6px 13px",borderRadius:20,background:tone===t?T.accent:T.bgStrong,border:`1px solid ${tone===t?T.accent:T.border}`,color:tone===t?"#fff":T.inkMid,cursor:"pointer",fontSize:12,fontWeight:600,fontFamily:"'Space Grotesk',sans-serif"}}>{t}</button>)}
             </div>
           </div>
           <div><Label>Brand voice (optional)</Label><Input value={brandVoice} onChange={e=>setBrandVoice(e.target.value)} placeholder="e.g. friendly, boutique, fashion-forward"/></div>
@@ -1185,10 +1185,10 @@ function AnalyticsView({ user }) {
     <div>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end",marginBottom:28}}>
         <div>
-          <h2 style={{fontSize:24,fontWeight:700,color:T.ink,margin:0,letterSpacing:"-0.5px"}}>Analytics</h2>
+          <h2 style={{fontFamily:"Instrument Serif, serif",fontSize:30,fontWeight:400,color:T.ink,margin:0}}>Analytics</h2>
           <p style={{fontSize:13,color:T.inkMid,marginTop:4}}>Real performance data from your connected accounts</p>
         </div>
-        <button onClick={fetchStats} disabled={loadingStats} style={{padding:"7px 14px",borderRadius:7,background:T.bgMuted,border:`1px solid ${T.border}`,color:T.inkMid,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"'Inter',sans-serif"}}>{loadingStats?"Loading…":"↻ Refresh"}</button>
+        <button onClick={fetchStats} disabled={loadingStats} style={{padding:"7px 14px",borderRadius:7,background:T.bgMuted,border:`1px solid ${T.border}`,color:T.inkMid,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"'Space Grotesk',sans-serif"}}>{loadingStats?"Loading…":"↻ Refresh"}</button>
       </div>
 
       {error && <div style={{background:T.crimsonSoft,border:`1px solid ${T.crimsonMid}`,borderRadius:8,padding:"10px 13px",fontSize:13,color:T.crimson,marginBottom:16}}>{error}</div>}
@@ -1211,7 +1211,7 @@ function AnalyticsView({ user }) {
         <Card>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
             <div style={{fontSize:13,fontWeight:600,color:T.ink}}>Smart insight</div>
-            <button onClick={analyze} disabled={loadingInsight} style={{padding:"5px 12px",borderRadius:7,fontSize:11,background:T.bgStrong,border:`1px solid ${T.border}`,color:T.inkMid,cursor:loadingInsight?"not-allowed":"pointer",fontFamily:"'Inter',sans-serif",fontWeight:600}}>{loadingInsight?"Thinking…":"Analyze"}</button>
+            <button onClick={analyze} disabled={loadingInsight} style={{padding:"5px 12px",borderRadius:7,fontSize:11,background:T.bgStrong,border:`1px solid ${T.border}`,color:T.inkMid,cursor:loadingInsight?"not-allowed":"pointer",fontFamily:"'Space Grotesk',sans-serif",fontWeight:600}}>{loadingInsight?"Thinking…":"Analyze"}</button>
           </div>
           <p style={{fontSize:13,color:T.inkMid,lineHeight:1.7,minHeight:80,margin:0}}>{insight||"Click Analyze to get insights on your performance."}</p>
         </Card>
@@ -1420,7 +1420,7 @@ function AccountsView({ user }) {
   return (
     <div>
       <div style={{marginBottom:28}}>
-        <h2 style={{fontSize:24,fontWeight:700,color:T.ink,margin:0,letterSpacing:"-0.5px"}}>Connected Accounts</h2>
+        <h2 style={{fontFamily:"Instrument Serif, serif",fontSize:30,fontWeight:400,color:T.ink,margin:0}}>Connected Accounts</h2>
         <p style={{fontSize:13,color:T.inkMid,marginTop:4}}>Link your social media accounts to publish directly from Quill</p>
       </div>
       {error   && <div style={{background:T.crimsonSoft,border:`1px solid ${T.crimsonMid}`,borderRadius:8,padding:"10px 13px",fontSize:13,color:T.crimson,marginBottom:14}}>{error}</div>}
@@ -1449,7 +1449,7 @@ function AccountsView({ user }) {
           <Card style={{textAlign:"center",padding:"36px 28px"}}>
             <h3 style={{fontSize:16,fontWeight:700,color:T.ink,margin:"0 0 8px"}}>Connect your social accounts</h3>
             <p style={{fontSize:13,color:T.inkMid,maxWidth:360,margin:"0 auto 22px",lineHeight:1.65}}>Connect Instagram, Facebook, LinkedIn, X, and TikTok in one place. The link expires in 48 hours.</p>
-            <button onClick={connectAccounts} disabled={connecting} style={{padding:"11px 26px",borderRadius:8,background:connecting?T.bgStrong:T.accent,border:"none",color:connecting?T.inkMuted:T.bg,fontSize:13,fontWeight:700,cursor:connecting?"not-allowed":"pointer",fontFamily:"'Inter',sans-serif"}}>{connecting?"Generating link…":"Connect social accounts"}</button>
+            <button onClick={connectAccounts} disabled={connecting} style={{padding:"11px 26px",borderRadius:8,background:connecting?T.bgStrong:T.accent,border:"none",color:connecting?T.inkMuted:"#fff",fontSize:13,fontWeight:700,cursor:connecting?"not-allowed":"pointer",fontFamily:"'Space Grotesk',sans-serif"}}>{connecting?"Generating link…":"Connect social accounts"}</button>
           </Card>
           <div style={{marginTop:10}}>
             <button onClick={initProfile} style={{background:"none",border:"none",color:T.inkMid,cursor:"pointer",fontSize:12,textDecoration:"underline"}}>↻ Refresh connection status</button>
@@ -1500,7 +1500,7 @@ function BillingView({ user }) {
   return (
     <div>
       <div style={{marginBottom:28}}>
-        <h2 style={{fontSize:24,fontWeight:700,color:T.ink,margin:0,letterSpacing:"-0.5px"}}>Billing</h2>
+        <h2 style={{fontFamily:"Instrument Serif, serif",fontSize:30,fontWeight:400,color:T.ink,margin:0}}>Billing</h2>
         <p style={{fontSize:13,color:T.inkMid,marginTop:4}}>Choose the plan that fits your business</p>
       </div>
 
@@ -1508,7 +1508,7 @@ function BillingView({ user }) {
 
       <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:10,marginBottom:36}}>
         {["monthly","annual"].map(b=>(
-          <button key={b} onClick={()=>setBilling(b)} style={{padding:"8px 20px",borderRadius:8,background:billing===b?T.accent:T.bgMuted,border:`1px solid ${billing===b?T.accent:T.border}`,color:billing===b?T.bg:T.inkMid,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"'Inter',sans-serif",display:"flex",alignItems:"center",gap:7}}>
+          <button key={b} onClick={()=>setBilling(b)} style={{padding:"8px 20px",borderRadius:8,background:billing===b?T.accent:T.bgMuted,border:`1px solid ${billing===b?T.accent:T.border}`,color:billing===b?"#fff":T.inkMid,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"'Space Grotesk',sans-serif",display:"flex",alignItems:"center",gap:7}}>
             {b==="monthly"?"Monthly":"Annual"}
             {b==="annual" && <span style={{fontSize:9,fontWeight:800,padding:"2px 7px",borderRadius:20,background:T.greenSoft,color:T.green}}>SAVE 20%</span>}
           </button>
@@ -1533,7 +1533,7 @@ function BillingView({ user }) {
               const period = billing==="annual"?"/yr":"/mo";
               return (
                 <div key={plan.id} style={{background:plan.popular?T.bgStrong:T.bgMuted,borderRadius:14,border:`1px solid ${plan.popular?T.borderBright:T.border}`,padding:24,display:"flex",flexDirection:"column",gap:14,position:"relative"}}>
-                  {plan.popular && <div style={{position:"absolute",top:-11,left:"50%",transform:"translateX(-50%)",background:T.accent,color:T.bg,fontSize:9,fontWeight:800,padding:"3px 12px",borderRadius:20,letterSpacing:"0.1em",whiteSpace:"nowrap"}}>MOST POPULAR</div>}
+                  {plan.popular && <div style={{position:"absolute",top:-11,left:"50%",transform:"translateX(-50%)",background:T.accent,color:"#fff",fontSize:9,fontWeight:800,padding:"3px 12px",borderRadius:20,letterSpacing:"0.1em",whiteSpace:"nowrap"}}>MOST POPULAR</div>}
                   <div>
                     <div style={{fontSize:16,fontWeight:700,color:T.ink,marginBottom:3}}>{plan.name}</div>
                     <div style={{fontSize:12,color:T.inkMid}}>{plan.description}</div>
@@ -1550,7 +1550,7 @@ function BillingView({ user }) {
                       </div>
                     ))}
                   </div>
-                  <button onClick={()=>currentPlan!==plan.id&&checkout(plan)} disabled={checkingOut===plan.id||currentPlan===plan.id} style={{padding:"10px 0",borderRadius:8,background:currentPlan===plan.id?T.greenSoft:plan.popular?T.accent:T.bgHover,border:currentPlan===plan.id?`1px solid ${T.green}`:plan.popular?"none":`1px solid ${T.borderStrong}`,color:currentPlan===plan.id?T.green:plan.popular?T.bg:T.inkSoft,fontSize:13,fontWeight:600,cursor:currentPlan===plan.id?"default":"pointer",fontFamily:"'Inter',sans-serif",transition:"all 0.15s"}}>
+                  <button onClick={()=>currentPlan!==plan.id&&checkout(plan)} disabled={checkingOut===plan.id||currentPlan===plan.id} style={{padding:"10px 0",borderRadius:8,background:currentPlan===plan.id?T.greenSoft:plan.popular?T.accent:T.bgHover,border:currentPlan===plan.id?`1px solid ${T.green}`:plan.popular?"none":`1px solid ${T.borderStrong}`,color:currentPlan===plan.id?T.green:plan.popular?"#fff":T.inkSoft,fontSize:13,fontWeight:600,cursor:currentPlan===plan.id?"default":"pointer",fontFamily:"'Space Grotesk',sans-serif",transition:"all 0.15s"}}>
                     {checkingOut===plan.id?"Redirecting…":currentPlan===plan.id?"✓ Current plan":"Start 7-day free trial"}
                   </button>
                 </div>
@@ -1590,7 +1590,7 @@ export default function App() {
   const signOut = async () => { await supabase.auth.signOut(); setUser(null); setShowAuth(false); };
 
   if (loadingAuth) return (
-    <div style={{minHeight:"100vh",background:T.bg,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Inter',sans-serif"}}>
+    <div style={{minHeight:"100vh",background:T.bg,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Space Grotesk',sans-serif"}}>
       <div style={{textAlign:"center"}}>
         <QuillLogo size={36}/>
         <p style={{marginTop:14,color:T.inkMid,fontSize:13}}>Loading…</p>
@@ -1604,16 +1604,16 @@ export default function App() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@400;500;600&family=Space+Mono&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: #18181b; font-family: 'Inter', sans-serif; }
+        body { background: #14110D; font-family: 'Space Grotesk', sans-serif; }
         input, textarea, select { color-scheme: dark; }
-        input::placeholder, textarea::placeholder { color: #3f3f46; }
+        input::placeholder, textarea::placeholder { color: #574F44; }
         input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(0.6); }
         ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #3e3e46; border-radius: 2px; }
-        ::-webkit-scrollbar-thumb:hover { background: #52525e; }
+        ::-webkit-scrollbar-thumb { background: rgba(242,234,219,.18); border-radius: 2px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(242,234,219,.3); }
         button { transition: opacity 0.12s, background 0.12s, border-color 0.12s; }
         button:hover:not(:disabled) { opacity: 0.85; }
         a { color: inherit; }
@@ -1638,7 +1638,7 @@ export default function App() {
             <div style={{display:"flex",alignItems:"center",gap:10}}>
               <QuillLogo size={30}/>
               <div>
-                <div style={{fontSize:16,fontWeight:800,color:T.ink,letterSpacing:"-0.4px",lineHeight:1}}>Quill</div>
+                <div style={{fontFamily:"Instrument Serif, serif",fontSize:19,fontWeight:400,color:T.ink,lineHeight:1}}>Quill</div>
                 <div style={{fontSize:10,color:T.inkLight,letterSpacing:"0.08em",textTransform:"uppercase",marginTop:2,fontWeight:500}}>Marketing Agent</div>
               </div>
             </div>
@@ -1665,7 +1665,7 @@ export default function App() {
               }}>
                 {active===item.id && <div style={{position:"absolute",left:0,top:"20%",bottom:"20%",width:2,background:T.accent,borderRadius:"0 2px 2px 0"}}/>}
                 <span style={{fontSize:13,color:active===item.id?T.inkSoft:T.inkLight,marginLeft:active===item.id?4:6,transition:"all 0.12s"}}>{item.icon}</span>
-                <span style={{fontSize:13,fontWeight:active===item.id?600:400,color:active===item.id?T.ink:T.inkMid,fontFamily:"'Inter',sans-serif",letterSpacing:"-0.1px"}}>{item.label}</span>
+                <span style={{fontSize:13,fontWeight:active===item.id?600:400,color:active===item.id?T.ink:T.inkMid,fontFamily:"'Space Grotesk',sans-serif",letterSpacing:"-0.1px"}}>{item.label}</span>
               </button>
             ))}
           </nav>
@@ -1683,7 +1683,7 @@ export default function App() {
                 <div style={{fontSize:10,color:T.inkLight,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{user.email}</div>
               </div>
             </div>
-            <button onClick={signOut} style={{width:"100%",marginTop:8,padding:"7px 0",borderRadius:7,background:"transparent",border:`1px solid ${T.border}`,color:T.inkMid,fontSize:11,fontWeight:500,cursor:"pointer",fontFamily:"'Inter',sans-serif"}}>Sign out</button>
+            <button onClick={signOut} style={{width:"100%",marginTop:8,padding:"7px 0",borderRadius:7,background:"transparent",border:`1px solid ${T.border}`,color:T.inkMid,fontSize:11,fontWeight:500,cursor:"pointer",fontFamily:"'Space Grotesk',sans-serif"}}>Sign out</button>
           </div>
         </aside>
 
