@@ -269,8 +269,8 @@ function LandingPage({ onSignup, onLogin }) {
     return () => io.disconnect();
   }, []);
 
-  const creatorPrice = annual ? "$19" : "$24";
-  const studioPrice  = annual ? "$47" : "$59";
+  const creatorPrice = annual ? "$63" : "$79";
+  const studioPrice  = annual ? "$135" : "$169";
   const period       = annual ? "/ mo, billed yearly" : "/ mo";
 
   const pillBtn = (active) => ({
@@ -608,11 +608,11 @@ function LandingPage({ onSignup, onLogin }) {
           {/* Starter */}
           <div style={styles.priceCardBase}>
             <div style={{ fontFamily: "'Space Mono', monospace", fontSize: 12, letterSpacing: ".1em", color: "#A89B86", textTransform: "uppercase" }}>Starter</div>
-            <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginTop: 18 }}><span style={styles.priceNum}>$0</span><span style={styles.pricePeriod}>/ forever</span></div>
-            <p style={{ fontSize: 14, color: "#9C9081", margin: "14px 0 0", lineHeight: 1.5 }}>For testing the waters on one channel.</p>
-            <button onClick={onSignup} style={{ display: "block", textAlign: "center", margin: "24px 0 26px", border: "1px solid rgba(242,234,219,.22)", color: "#F2EADB", padding: 13, borderRadius: 999, fontWeight: 600, fontSize: 14.5, background: "none", cursor: "pointer", fontFamily: "'Space Grotesk', sans-serif", width: "100%" }}>Start free</button>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginTop: 18 }}><span style={styles.priceNum}>{annual ? "$23" : "$29"}</span><span style={styles.pricePeriod}>{period}</span></div>
+            <p style={{ fontSize: 14, color: "#9C9081", margin: "14px 0 0", lineHeight: 1.5 }}>Perfect for solo business owners.</p>
+            <button onClick={onSignup} style={{ display: "block", textAlign: "center", margin: "24px 0 26px", border: "1px solid rgba(242,234,219,.22)", color: "#F2EADB", padding: 13, borderRadius: 999, fontWeight: 600, fontSize: 14.5, background: "none", cursor: "pointer", fontFamily: "'Space Grotesk', sans-serif", width: "100%" }}>Start 7-day trial</button>
             <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
-              {["1 connected platform","10 auto-posts / month","Writes & schedules for you","Basic analytics"].map(f => (
+              {["3 active campaigns","50 posts per month","20 images per month","Basic analytics","Email support"].map(f => (
                 <div key={f} style={styles.checkItem}><CheckIcon/> {f}</div>
               ))}
             </div>
@@ -620,24 +620,24 @@ function LandingPage({ onSignup, onLogin }) {
           {/* Creator */}
           <div style={styles.priceCardPop}>
             <span style={styles.priceBadge}>MOST POPULAR</span>
-            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: 12, letterSpacing: ".1em", color: "#FF7B52", textTransform: "uppercase" }}>Creator</div>
+            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: 12, letterSpacing: ".1em", color: "#FF7B52", textTransform: "uppercase" }}>Growth</div>
             <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginTop: 18 }}><span style={styles.priceNum}>{creatorPrice}</span><span style={styles.pricePeriod}>{period}</span></div>
-            <p style={{ fontSize: 14, color: "#9C9081", margin: "14px 0 0", lineHeight: 1.5 }}>Full autopilot for a serious solo creator.</p>
+            <p style={{ fontSize: 14, color: "#9C9081", margin: "14px 0 0", lineHeight: 1.5 }}>For small businesses scaling up.</p>
             <button onClick={onSignup} style={{ display: "block", textAlign: "center", margin: "24px 0 26px", background: "#FF5B2E", color: "#fff", padding: 13, borderRadius: 999, fontWeight: 600, fontSize: 14.5, border: "none", cursor: "pointer", fontFamily: "'Space Grotesk', sans-serif", boxShadow: "0 10px 30px rgba(255,91,46,.3)", width: "100%" }}>Start 7-day trial</button>
             <div style={{ display: "flex", flexDirection: "column", gap: 11, color: "#E4DACA" }}>
-              {["5 connected platforms","Unlimited auto-posts","Voice training + auto-design","Peak-time publishing","One idea → ten posts","Engagement assistant"].map(f => (
+              {["Unlimited campaigns","Unlimited posts","100 images per month","Full analytics + insights","Brand Kit","Priority support"].map(f => (
                 <div key={f} style={styles.checkItem}><CheckIcon/> {f}</div>
               ))}
             </div>
           </div>
           {/* Studio */}
           <div style={styles.priceCardBase}>
-            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: 12, letterSpacing: ".1em", color: "#A89B86", textTransform: "uppercase" }}>Studio</div>
+            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: 12, letterSpacing: ".1em", color: "#A89B86", textTransform: "uppercase" }}>Agency</div>
             <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginTop: 18 }}><span style={styles.priceNum}>{studioPrice}</span><span style={styles.pricePeriod}>{period}</span></div>
-            <p style={{ fontSize: 14, color: "#9C9081", margin: "14px 0 0", lineHeight: 1.5 }}>For multi-brand creators and small teams.</p>
+            <p style={{ fontSize: 14, color: "#9C9081", margin: "14px 0 0", lineHeight: 1.5 }}>For agencies managing clients.</p>
             <button onClick={onSignup} style={{ display: "block", textAlign: "center", margin: "24px 0 26px", border: "1px solid rgba(242,234,219,.22)", color: "#F2EADB", padding: 13, borderRadius: 999, fontWeight: 600, fontSize: 14.5, background: "none", cursor: "pointer", fontFamily: "'Space Grotesk', sans-serif", width: "100%" }}>Start 7-day trial</button>
             <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
-              {["Everything in Creator","All 11 platforms","Multiple brand kits","Team approvals & roles","Priority publishing + API"].map(f => (
+              {["Everything in Growth","Unlimited client accounts","White-label option","Client approval flows","Dedicated account manager"].map(f => (
                 <div key={f} style={styles.checkItem}><CheckIcon/> {f}</div>
               ))}
             </div>
