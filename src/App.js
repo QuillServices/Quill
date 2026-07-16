@@ -387,7 +387,7 @@ function LandingPage({ onSignup, onLogin }) {
               Your social media,<br/>on <em style={{ fontStyle: "italic", color: "#FF5B2E" }}>autopilot.</em>
             </h1>
             <p style={{ fontSize: 19, lineHeight: 1.55, color: "#B6AA98", maxWidth: 480, margin: "26px 0 0" }}>
-              Quill writes, designs, and posts for you — across every platform, every day. You set the direction. It ships the work.
+              Quill writes, designs, and posts for you — across Instagram, Facebook, and Pinterest, every day. You set the direction. It ships the work.
             </p>
             <div style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 36 }}>
               <button onClick={onSignup} className="lp-btn-orange" style={styles.btnOrange}>Start free →</button>
@@ -468,9 +468,9 @@ function LandingPage({ onSignup, onLogin }) {
         <div style={{ display: "grid", gridTemplateColumns: ".82fr 1.18fr", gap: 48, marginTop: 56, alignItems: "center" }}>
           <div data-reveal="" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             {[
-              { n: "01", title: "Learn your voice", desc: "Connect your accounts. Quill studies your past posts and locks in your tone, topics, and look." },
-              { n: "02", title: "Draft & design",   desc: "It writes captions, builds the visuals, and turns one idea into a week of on-brand posts." },
-              { n: "03", title: "Auto-publish",      desc: "Posts go out at peak times, on every platform. You just watch the feed fill up." },
+              { n: "01", title: "Set your voice", desc: "Tell Quill your brand, tone, and topics once. Every post follows it from day one." },
+              { n: "02", title: "Draft and design",   desc: "Quill writes the caption and generates an on-brand image for every post, automatically." },
+              { n: "03", title: "Auto-publish",      desc: "Posts go out on your schedule to Instagram, Facebook, and Pinterest. You just watch the feed fill up." },
             ].map(s => (
               <div key={s.n} className="lp-feature-card" style={styles.featureCard}>
                 <div style={{ fontFamily: "'Space Mono', monospace", fontSize: 12, color: "#FF7B52", letterSpacing: ".08em" }}>{s.n}</div>
@@ -525,12 +525,12 @@ function LandingPage({ onSignup, onLogin }) {
         </div>
         <div data-reveal="" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16, marginTop: 48 }}>
           {[
-            { n:"01", t:"Writes in your voice",    d:"Captions, hooks, and threads that sound like you — not like a robot. Trained on your best posts." },
-            { n:"02", t:"Designs every visual",    d:"On-brand carousels, covers, and clips generated automatically from your brand kit." },
-            { n:"03", t:"Posts at peak times",     d:"Quill learns when your audience is awake and posts to Instagram, Facebook, and Pinterest on their own clocks." },
-            { n:"04", t:"One idea → ten posts",    d:"Drop a thought, a link, or a voice note. Quill repurposes it across every format and channel." },
-            { n:"05", t:"Replies while you sleep", d:"Suggested replies to comments and DMs in your tone — approve a batch in seconds." },
-            { n:"06", t:"Analytics that auto-tune",d:"Every post teaches Quill what works. The strategy quietly improves itself each week." },
+            { n:"01", t:"Writes in your voice",   d:"Describe your brand voice once. Every caption and hook sticks to it, on every post, without you touching a keyboard." },
+            { n:"02", t:"Creates every image",    d:"On-brand images generated automatically for each post. No designer, no stock photos, no blank feed." },
+            { n:"03", t:"Posts on your schedule", d:"Daily, weekdays, or weekly. Pick the cadence and time once and Quill publishes like clockwork." },
+            { n:"04", t:"One theme, endless posts", d:"A single campaign brief becomes a continuous stream of fresh, on-theme content. Set it and forget it." },
+            { n:"05", t:"Post now, anytime",      d:"Need something out immediately? Generate, tweak, and publish a post in under a minute from any campaign." },
+            { n:"06", t:"Analytics + AI insights",d:"Track impressions and post performance across platforms, with AI-generated insights on what is working." },
           ].map(f => (
             <div key={f.n} className="lp-feature-card" style={styles.featureCard}>
               <div style={{ fontFamily: "'Space Mono', monospace", fontSize: 12, color: "#7E7466" }}>{f.n}</div>
@@ -653,8 +653,8 @@ function LandingPage({ onSignup, onLogin }) {
         </div>
         <div data-reveal="" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 48px", marginTop: 44, borderTop: "1px solid rgba(242,234,219,.08)", paddingTop: 8 }}>
           {[
-            { q: "Will it actually sound like me?",            a: "Quill trains on your past posts and a short voice setup, then stays in your tone. Tweak any draft before it ships — or let it run fully hands-off." },
-            { q: "Do I approve posts, or does it just publish?",a: "Your call. Run on full autopilot, or switch on approvals and rubber-stamp a whole week in a couple of taps." },
+            { q: "Will it actually sound like me?",            a: "You describe your voice in plain words: warm, witty, luxury, whatever fits. Quill sticks to it on every post, and you can edit anything before it ships." },
+            { q: "Do I approve posts, or does it just publish?",a: "Campaigns run on autopilot at the times you set. Want more control? Use Post Now to review and edit any post before it goes live." },
             { q: "Which platforms can it post to?",             a: "Instagram, TikTok, LinkedIn, X, and Facebook today — with more rolling out. One queue feeds them all." },
             { q: "Can I cancel anytime?",                       a: "Yes. No contracts, no lock-in. Every paid plan starts with a 7-day full-access trial, no card required." },
           ].map(f => (
