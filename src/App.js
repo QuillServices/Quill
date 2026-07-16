@@ -169,7 +169,7 @@ function QuillLogo({ size=32 }) {
 
 function Card({ children, style:extra={} }) {
   return (
-    <div style={{
+    <div className="q-card" style={{
       background: T.bgMuted,
       borderRadius: 12,
       border: `1px solid ${T.border}`,
@@ -781,8 +781,10 @@ function AuthScreen({ onAuth, initialMode="login" }) {
   };
 
   return (
-    <div style={{ minHeight:"100vh", background:T.bg, display:"flex", alignItems:"center", justifyContent:"center", fontFamily:"'Space Grotesk',sans-serif", padding:20 }}>
-      <div style={{ width:"100%", maxWidth:380 }}>
+    <div style={{ minHeight:"100vh", background:T.bg, display:"flex", alignItems:"center", justifyContent:"center", fontFamily:"'Space Grotesk',sans-serif", padding:20, position:"relative", overflow:"hidden" }}>
+      <style>{`@keyframes authIn { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:none; } } input:focus { border-color: rgba(255,91,46,.55) !important; box-shadow: 0 0 0 3px rgba(255,91,46,.12); }`}</style>
+      <div style={{ position:"absolute", top:"-25%", left:"50%", transform:"translateX(-50%)", width:720, height:720, borderRadius:"50%", background:"radial-gradient(circle, rgba(255,91,46,.14), rgba(255,91,46,0) 65%)", pointerEvents:"none" }}/>
+      <div style={{ width:"100%", maxWidth:380, position:"relative", animation:"authIn .5s cubic-bezier(.2,.7,.2,1)" }}>
         <div style={{ textAlign:"center", marginBottom:28 }}>
           <div style={{ display:"inline-flex", alignItems:"center", gap:10, marginBottom:10 }}>
             <QuillLogo size={36}/>
@@ -1614,9 +1616,14 @@ export default function App() {
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(242,234,219,.18); border-radius: 2px; }
         ::-webkit-scrollbar-thumb:hover { background: rgba(242,234,219,.3); }
-        button { transition: opacity 0.12s, background 0.12s, border-color 0.12s; }
-        button:hover:not(:disabled) { opacity: 0.85; }
+        button { transition: opacity 0.12s, background 0.12s, border-color 0.12s, transform 0.15s, box-shadow 0.15s; }
+        button:hover:not(:disabled) { opacity: 0.92; transform: translateY(-1px); }
         a { color: inherit; }
+        input:focus, textarea:focus { border-color: rgba(255,91,46,.55) !important; box-shadow: 0 0 0 3px rgba(255,91,46,.12); }
+        .q-card { transition: border-color .2s, transform .2s, box-shadow .2s; }
+        .q-card:hover { border-color: rgba(255,91,46,.3) !important; transform: translateY(-2px); box-shadow: 0 12px 30px rgba(0,0,0,.35); }
+        .q-view { animation: viewIn .4s cubic-bezier(.2,.7,.2,1); }
+        @keyframes viewIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
       `}</style>
 
       <div style={{display:"flex",minHeight:"100vh",background:T.bg}}>
@@ -1689,7 +1696,7 @@ export default function App() {
 
         {/* ── MAIN CONTENT ── */}
         <main style={{flex:1,overflow:"auto",background:T.bg}}>
-          <div style={{maxWidth:1060,margin:"0 auto",padding:"38px 34px"}}>
+          <div key={active} className="q-view" style={{maxWidth:1060,margin:"0 auto",padding:"38px 34px"}}>
             {active==="campaigns" && <CampaignsView user={user}/>}
             {active==="copy"      && <CopywriterView/>}
             {active==="analytics" && <AnalyticsView user={user}/>}
