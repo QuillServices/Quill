@@ -88,7 +88,7 @@ const PLANS = [
     monthlyPriceId:"price_1Tddw8Pb3Ifjj2XOPzC7cyrI",
     annualPriceId:"price_1TeNWOPb3Ifjj2XO5SdnK9jB",
     description:"Perfect for solo business owners",
-    features:["3 active campaigns","50 posts per month","20 images per month","Basic analytics","Email support"],
+    features:["3 platforms included","3 active campaigns","50 posts per month","20 images per month","Basic analytics","Email support"],
     limits:{ campaigns:3, posts:50, images:20 },
   },
   {
@@ -367,7 +367,7 @@ function LandingPage({ onSignup, onLogin }) {
             <a href="#lp-features" className="lp-nav-link">Features</a>
             <a href="#lp-how" className="lp-nav-link">How it works</a>
             <a href="#lp-pricing" className="lp-nav-link">Pricing</a>
-            <a href="#lp-stories" className="lp-nav-link">Stories</a>
+            
           </div>
           <div style={styles.navCta}>
             <button onClick={onLogin} style={styles.btnGhost}>Log in</button>
@@ -410,7 +410,7 @@ function LandingPage({ onSignup, onLogin }) {
                 <span style={{ fontFamily: "'Space Mono', monospace", fontSize: 10.5, letterSpacing: ".1em", color: "#14110D", background: "#F4B740", padding: "4px 9px", borderRadius: 6 }}>AUTO</span>
               </div>
               <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
-                {["Instagram", "LinkedIn", "X", "TikTok"].map((p, i) => (
+                {["Instagram", "Facebook", "Pinterest"].map((p, i) => (
                   <span key={p} style={{ fontSize: 12, color: i === 0 ? "#14110D" : "#A89B86", background: i === 0 ? "#F2EADB" : "#261F18", padding: "6px 12px", borderRadius: 8, fontWeight: i === 0 ? 600 : 400 }}>{p}</span>
                 ))}
               </div>
@@ -436,7 +436,7 @@ function LandingPage({ onSignup, onLogin }) {
         <div style={{ borderTop: "1px solid rgba(242,234,219,.08)", borderBottom: "1px solid rgba(242,234,219,.08)" }}>
           <div style={{ maxWidth: 1200, margin: "0 auto", padding: "20px 40px", display: "flex", alignItems: "center", gap: 38, flexWrap: "wrap", fontFamily: "'Space Mono', monospace", fontSize: 12, letterSpacing: ".1em", color: "#6E6557" }}>
             <span style={{ color: "#574F44" }}>POSTS TO</span>
-            {["INSTAGRAM","TIKTOK","LINKEDIN","X / TWITTER","THREADS","YOUTUBE","PINTEREST"].map(p => <span key={p}>{p}</span>)}
+            {["INSTAGRAM","FACEBOOK","PINTEREST"].map(p => <span key={p}>{p}</span>)}
           </div>
         </div>
       </div>
@@ -445,10 +445,10 @@ function LandingPage({ onSignup, onLogin }) {
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 40px" }}>
         <div data-reveal="" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", borderBottom: "1px solid rgba(242,234,219,.08)" }}>
           {[
-            { num: "2.4M", label: "POSTS SHIPPED" },
-            { num: "11",   label: "PLATFORMS, ONE QUEUE" },
-            { num: "9 hrs",label: "SAVED EVERY WEEK" },
-            { num: "40k+", label: "CREATORS ON AUTOPILOT" },
+            { num: "3", label: "PLATFORMS, ONE QUEUE" },
+            { num: "24/7", label: "PUBLISHING ON AUTOPILOT" },
+            { num: "9 hrs", label: "SAVED EVERY WEEK" },
+            { num: "7 days", label: "FREE, NO CARD NEEDED" },
           ].map((s, i) => (
             <div key={s.label} style={{ padding: i === 0 ? "46px 28px 46px 0" : i === 3 ? "46px 0 46px 28px" : "46px 28px", borderLeft: i > 0 ? "1px solid rgba(242,234,219,.08)" : "none" }}>
               <div style={{ fontFamily: "'Instrument Serif', serif", fontSize: 50, lineHeight: 1 }}>{s.num}</div>
@@ -491,8 +491,8 @@ function LandingPage({ onSignup, onLogin }) {
             <div style={{ padding: 8 }}>
               {[
                 { time: "09:00", platform: "Instagram", copy: "5 ways I batch a month of content…", status: "PUBLISHING", statusColor: "#FF7B52", pulse: true,  rowBg: "rgba(255,91,46,.07)" },
-                { time: "12:30", platform: "LinkedIn",  copy: "Why I stopped scheduling manually",  status: "SCHEDULED",  statusColor: "#8E8373", pulse: false, rowBg: "transparent" },
-                { time: "17:00", platform: "TikTok",    copy: "3 hooks that doubled my saves",      status: "DESIGNING",  statusColor: "#F4B740", pulse: false, rowBg: "transparent" },
+                { time: "12:30", platform: "Facebook",  copy: "Why I stopped scheduling manually",  status: "SCHEDULED",  statusColor: "#8E8373", pulse: false, rowBg: "transparent" },
+                { time: "17:00", platform: "Pinterest", copy: "3 hooks that doubled my saves",      status: "DESIGNING",  statusColor: "#F4B740", pulse: false, rowBg: "transparent" },
                 { time: "19:30", platform: "X · Threads",copy: "The 1-idea-to-10-posts workflow",   status: "DRAFTED",    statusColor: "#8E8373", pulse: false, rowBg: "transparent" },
               ].map((row, i) => (
                 <div key={i} style={{ display: "grid", gridTemplateColumns: "64px 96px 1fr 124px", gap: 12, alignItems: "center", padding: 14, borderRadius: i === 0 ? 12 : 0, background: row.rowBg, borderTop: i > 0 ? "1px solid rgba(242,234,219,.05)" : "none" }}>
@@ -527,7 +527,7 @@ function LandingPage({ onSignup, onLogin }) {
           {[
             { n:"01", t:"Writes in your voice",    d:"Captions, hooks, and threads that sound like you — not like a robot. Trained on your best posts." },
             { n:"02", t:"Designs every visual",    d:"On-brand carousels, covers, and clips generated automatically from your brand kit." },
-            { n:"03", t:"Posts at peak times",     d:"Quill learns when your audience is awake and publishes to each platform on its own clock." },
+            { n:"03", t:"Posts at peak times",     d:"Quill learns when your audience is awake and posts to Instagram, Facebook, and Pinterest on their own clocks." },
             { n:"04", t:"One idea → ten posts",    d:"Drop a thought, a link, or a voice note. Quill repurposes it across every format and channel." },
             { n:"05", t:"Replies while you sleep", d:"Suggested replies to comments and DMs in your tone — approve a batch in seconds." },
             { n:"06", t:"Analytics that auto-tune",d:"Every post teaches Quill what works. The strategy quietly improves itself each week." },
@@ -581,10 +581,10 @@ function LandingPage({ onSignup, onLogin }) {
         <div data-reveal="" style={{ maxWidth: 560 }}>
           <div style={styles.eyebrow}>Integrations</div>
           <h2 style={styles.h2lg}>Plugs into your whole stack.</h2>
-          <p style={{ fontSize: 17, lineHeight: 1.55, color: "#B6AA98", margin: "18px 0 0" }}>Publish everywhere your audience is, and pull source material from the tools you already use.</p>
+          <p style={{ fontSize: 17, lineHeight: 1.55, color: "#B6AA98", margin: "18px 0 0" }}>Publish to Instagram, Facebook, and Pinterest from one queue — with more platforms on the way.</p>
         </div>
         <div data-reveal="" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, marginTop: 44 }}>
-          {["Instagram","TikTok","LinkedIn","X / Twitter","Facebook","Canva","Notion","Figma","Google Drive"].map(name => (
+          {["Instagram","Facebook","Pinterest"].map(name => (
             <div key={name} className="lp-integ-card" style={styles.integCard}>
               <span style={{ width: 30, height: 30, borderRadius: 9, background: "#261F18", display: "inline-block", flexShrink: 0 }}/>
               <span style={{ fontSize: 14.5, color: "#D8CDBB" }}>{name}</span>
@@ -612,7 +612,7 @@ function LandingPage({ onSignup, onLogin }) {
             <p style={{ fontSize: 14, color: "#9C9081", margin: "14px 0 0", lineHeight: 1.5 }}>Perfect for solo business owners.</p>
             <button onClick={onSignup} style={{ display: "block", textAlign: "center", margin: "24px 0 26px", border: "1px solid rgba(242,234,219,.22)", color: "#F2EADB", padding: 13, borderRadius: 999, fontWeight: 600, fontSize: 14.5, background: "none", cursor: "pointer", fontFamily: "'Space Grotesk', sans-serif", width: "100%" }}>Start 7-day trial</button>
             <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
-              {["3 active campaigns","50 posts per month","20 images per month","Basic analytics","Email support"].map(f => (
+              {["3 platforms included","3 active campaigns","50 posts per month","20 images per month","Basic analytics","Email support"].map(f => (
                 <div key={f} style={styles.checkItem}><CheckIcon/> {f}</div>
               ))}
             </div>
@@ -728,7 +728,7 @@ function LandingPage({ onSignup, onLogin }) {
           </div>
           {[
             { label: "Product",    links: [["Features","#lp-features"],["How it works","#lp-how"],["Pricing","#lp-pricing"],["Integrations","#lp-features"]] },
-            { label: "Company",   links: [["About","#"],["Stories","#lp-stories"],["Careers","#"],["Blog","#"]] },
+            { label: "Company",   links: [["About","#"],["Careers","#"],["Blog","#"]] },
             { label: "Get started",links: [["Log in","#"],["Start free","#lp-pricing"],["Contact","#"]] },
           ].map(col => (
             <div key={col.label}>
